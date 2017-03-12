@@ -1088,7 +1088,12 @@ int main(int argc, char *argv[]) {
       break;
 
     case 'R':
-      rotation = atoi(optarg);
+      matrix_options.rotation = atoi(optarg);
+      if (rotation % 90 != 0) {
+        fprintf(stderr, TERM_ERR "Rotation %d not allowed! "
+                "Only 0, 90, 180 and 270 are possible.\n" TERM_NORM, rotation);
+        return 1;
+      }
       break;
 
     case 'L':
@@ -1139,11 +1144,7 @@ int main(int argc, char *argv[]) {
     return usage(argv[0]);
   }
 
-  if (rotation % 90 != 0) {
-    fprintf(stderr, TERM_ERR "Rotation %d not allowed! "
-            "Only 0, 90, 180 and 270 are possible.\n" TERM_NORM, rotation);
-    return 1;
-  }
+
 
   RGBMatrix *matrix = CreateMatrixFromOptions(matrix_options, runtime_opt);
   if (matrix == NULL)
@@ -1154,10 +1155,6 @@ int main(int argc, char *argv[]) {
     // Or any other U-arrangement.
     matrix->ApplyStaticTransformer(UArrangementTransformer(
                                      matrix_options.parallel));
-  }
-
-  if (rotation > 0) {
-    matrix->ApplyStaticTransformer(RotateTransformer(rotation));
   }
 
   printf("Size: %dx%d. Hardware gpio mapping: %s\n",
