@@ -11,6 +11,7 @@ class SampleBase(object):
     def __init__(self, *args, **kwargs):
         self.parser = argparse.ArgumentParser()
 
+        self.parser.add_argument("-R", "--led-rotation", action="store", help="Sets the rotation of matrix. Allowed: 0, 90, 180, 270. Default: 0.", choices=[0, 90, 180, 270], default=0, type=int)
         self.parser.add_argument("-r", "--led-rows", action="store", help="Display rows. 16 for 16x32, 32 for 32x32. Default: 32", default=32, type=int)
         self.parser.add_argument("-c", "--led-chain", action="store", help="Daisy-chained boards. Default: 1.", default=1, type=int)
         self.parser.add_argument("-P", "--led-parallel", action="store", help="For Plus-models or RPi2: parallel chains. 1..3. Default: 1", default=1, type=int)
@@ -43,6 +44,8 @@ class SampleBase(object):
         options.pwm_bits = self.args.led_pwm_bits
         options.brightness = self.args.led_brightness
         options.pwm_lsb_nanoseconds = self.args.led_pwm_lsb_nanoseconds
+        options.rotation = self.args.led_rotation
+        
         if self.args.led_show_refresh:
           options.show_refresh_rate = 1
 
