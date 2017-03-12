@@ -48,6 +48,7 @@ cdef extern from "led-matrix.h" namespace "rgb_matrix::RGBMatrix":
         const char *hardware_mapping
 
         int rows
+        int rotation
         int chain_length
         int parallel
         int pwm_bits
