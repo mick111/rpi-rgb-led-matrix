@@ -23,7 +23,7 @@ TARGET=librgbmatrix
 #   regular-pi1        # If you have an old Pi1 and regular didn't work.
 #   classic            # (deprecated) Classic Pi1/2/. Not used anymore.
 #   classic-pi1        # (deprecated) Classic pinout on Rasperry Pi 1
-HARDWARE_DESC?=regular
+HARDWARE_DESC?=mick111
 
 ###
 # After you change any of the following DEFINES, make sure to 'make' again.
@@ -32,6 +32,9 @@ HARDWARE_DESC?=regular
 # via command line flags as well. No real need to change them in the Makefile.
 # (So be prepared for these to be removed at some point)
 ###
+
+
+#DEFINES+=-DDEFAULT_ROTATION=180
 
 # If you see that your display is inverse, you might have a matrix variant
 # has uses inverse logic for the RGB bits. In that case: uncomment this.

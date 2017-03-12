@@ -213,5 +213,30 @@ struct HardwareMapping matrix_hardware_mappings[] = {
     .p0_b2         = GPIO_BIT(25),
   },
 
+    
+  /*
+   * Custom mapping
+   */
+  {
+    .name          = "mick111",
+      
+    .output_enable = GPIO_BIT(2),
+    .clock         = GPIO_BIT(3),
+    .strobe        = GPIO_BIT(10),
+        
+    /* Address lines */
+    .a             = GPIO_BIT(7),
+    .b             = GPIO_BIT(8),
+    .c             = GPIO_BIT(9),
+      
+    /* Parallel chain 0, RGB for both sub-panels */
+    .p0_r1         = GPIO_BIT(17),  /* masks: SPI0_SCKL  */
+    .p0_g1         = GPIO_BIT(18),  /* Not on RPi1, Rev1; use "regular-pi1" instead */
+    .p0_b1         = GPIO_BIT(22),   /* masks: SPI0_CE1   */
+    .p0_r2         = GPIO_BIT(23),   /* masks: SPI0_CE0   */
+    .p0_g2         = GPIO_BIT(24),   /* masks: SPI0_MISO  */
+    .p0_b2         = GPIO_BIT(25),  /* masks: SPI0_MOSI  */
+  },
+    
   {0}
 };
