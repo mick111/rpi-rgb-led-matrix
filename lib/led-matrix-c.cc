@@ -55,6 +55,7 @@ struct RGBLedMatrix *led_matrix_create_from_options(
 #define OPT_COPY_IF_SET(o) if (opts->o) default_opts.o = opts->o
     OPT_COPY_IF_SET(hardware_mapping);
     OPT_COPY_IF_SET(rows);
+    OPT_COPY_IF_SET(rotation);
     OPT_COPY_IF_SET(chain_length);
     OPT_COPY_IF_SET(parallel);
     OPT_COPY_IF_SET(pwm_bits);
@@ -80,6 +81,7 @@ struct RGBLedMatrix *led_matrix_create_from_options(
 #define ACTUAL_VALUE_BACK_TO_OPT(o) opts->o = default_opts.o
     ACTUAL_VALUE_BACK_TO_OPT(hardware_mapping);
     ACTUAL_VALUE_BACK_TO_OPT(rows);
+    ACTUAL_VALUE_BACK_TO_OPT(rotation);
     ACTUAL_VALUE_BACK_TO_OPT(chain_length);
     ACTUAL_VALUE_BACK_TO_OPT(parallel);
     ACTUAL_VALUE_BACK_TO_OPT(pwm_bits);

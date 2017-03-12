@@ -68,6 +68,11 @@ public:
     // of rows supported by the display, so 32 or 16. Default: 32.
     // Flag: --led-rows
     int rows;
+      
+    // Rotation of the matrix: Should be one of 0, 90, 180 or 270
+    // Default: 0
+    // Flag: --led-rotation
+    int rotation;
 
     // The chain_length is the number of displays daisy-chained together
     // (output of one connected to input of next). Default: 1
