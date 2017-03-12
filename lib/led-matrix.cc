@@ -135,8 +135,12 @@ RGBMatrix::Options::Options() :
 #else
   hardware_mapping("regular"),
 #endif
-
+    
+#ifdef DEFAULT_ROWS
+  rows(DEFAULT_ROWS),
+#else
   rows(32),
+#endif
     
 #ifdef DEFAULT_ROTATION
   rotation(DEFAULT_ROTATION),

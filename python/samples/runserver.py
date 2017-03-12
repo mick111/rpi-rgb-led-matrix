@@ -22,6 +22,9 @@ class ServerHandler(SocketServer.BaseRequestHandler):
             if command == "CLEAR":
                 self.server.server_runner.text = None
                 self.server.server_runner.pos = 0
+            if command == "GET":
+                self.request.sendall("""HTTP/1.1 200 OK\r\nDate: Sun, 12 Mar 2017 22:02:15 GMT\r\nServer: Apache/2.0.51 (Fedora)\r\nLast-Modified: Thu, 26 Aug 2004 17:56:52 GMT\r\nETag: "1be407b-70f-52c6e100"\r\nAccept-Ranges: bytes\r\nContent-Length: 1807\r\nConnection: close\r\nContent-Type: text/html; charset=iso-8859-1\r\n\r\n<html>\n\n<head>\n<title>Ceci n'est pas un site web</title>\n<basefont size=4>\n</head>\n\n<body bgcolor=FFFFFF>\n\n<h1>This is not a website...</h1>\n\n<h6>Perdu!</h6>\n\n</html>\n""")
+                break
             elif command == "TEXT":
                 print "TEXT was :", self.server.server_runner.text
                 self.server.server_runner.text = commands[1].decode('utf-8').strip() if len(commands) > 1 else None
