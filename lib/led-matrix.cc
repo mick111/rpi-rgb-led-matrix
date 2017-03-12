@@ -137,7 +137,13 @@ RGBMatrix::Options::Options() :
 #endif
 
   rows(32),
+    
+#ifdef DEFAULT_ROTATION
+  rotation(DEFAULT_ROTATION),
+#else
   rotation(0),
+#endif
+    
     chain_length(1), parallel(1), pwm_bits(11),
 
 #ifdef LSB_PWM_NANOSECONDS
