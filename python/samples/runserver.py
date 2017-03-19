@@ -5,6 +5,8 @@ from rgbmatrix import graphics
 import time
 import threading
 import SocketServer
+from PIL import Image
+import glob
 
 class ServerHandler(SocketServer.BaseRequestHandler):
     def setup(self):
@@ -13,18 +15,30 @@ class ServerHandler(SocketServer.BaseRequestHandler):
     def handle(self):
         print "Connection from {}".format(self.client_address[0])
         while True:
-            data = self.request.recv(1024)
-            print "Receive from {}".format(self.client_address[0])
+          data = self.request.recv(1024)
+          print "Receive from {}".format(self.client_address[0])
+          if not data: break
+          datas = data.split("\n")
+          print repr(datas)
+          for data in datas:
+            if data == '': break
             print repr(data)
-            if not data: break
             commands = data.strip().split(" ", 1)
             command = commands[0].strip().upper()
+            if command not in ["COLOR", "FONT"]:
+              self.server.server_runner.text = None
+              self.server.server_runner.images = None
+              self.server.server_runner.pos = 0
+              self.server.server_runner.sleeptime = 0.05
             if command == "CLEAR":
-                self.server.server_runner.text = None
-                self.server.server_runner.pos = 0
-            if command == "GET":
-                self.request.sendall("""HTTP/1.1 200 OK\r\nDate: Sun, 12 Mar 2017 22:02:15 GMT\r\nServer: Apache/2.0.51 (Fedora)\r\nLast-Modified: Thu, 26 Aug 2004 17:56:52 GMT\r\nETag: "1be407b-70f-52c6e100"\r\nAccept-Ranges: bytes\r\nContent-Length: 1807\r\nConnection: close\r\nContent-Type: text/html; charset=iso-8859-1\r\n\r\n<html>\n\n<head>\n<title>Ceci n'est pas un site web</title>\n<basefont size=4>\n</head>\n\n<body bgcolor=FFFFFF>\n\n<h1>This is not a website...</h1>\n\n<h6>Perdu!</h6>\n\n</html>\n""")
-                break
+                pass
+            elif command == "NYAN":
+                self.server.server_runner.images = [Image.open(i).convert("RGB") for i in sorted(glob.glob('Nyan1632/*.gif'))]
+                self.server.server_runner.pos = -32
+                self.server.server_runner.sleeptime = 0.07
+            elif command == "GET":
+                self.request.sendall("""HTTP/1.1 200 OK\r\nDate: Sun, 19 Mar 2017 21:13:55 GMT\r\nServer: Apache/2.4.23 (Unix)\r\nVary: negotiate\r\nTCN: choice\r\nLast-Modified: Mon, 11 Jun 2007 18:53:14 GMT\r\nETag: "2d-432a5e4a73a80"\r\nContent-Type: text/html\r\n\r\n<html><body><h1>This is not a website...</h1><h6>Perdu!</h6></body></html>\r\n""")
+                return
             elif command == "TEXT":
                 print "TEXT was :", self.server.server_runner.text
                 self.server.server_runner.text = commands[1].decode('utf-8').strip() if len(commands) > 1 else None
@@ -56,30 +70,38 @@ class RunServer(SampleBase):
         super(RunServer, self).__init__(*args, **kwargs)
         self.parser.add_argument("-l", "--listening-port", type=int, help="The port on which commands are received.", default=23735)
     
-    def showtext(server_runner):
+    def show(server_runner):
         while True:
-            server_runner.offscreen_canvas.Clear()
-            time.sleep(0.05)
-            if server_runner.text is None:
+            server_runner.offscreen_canvas.Fill(server_runner.background[0],server_runner.background[1],server_runner.background[2])
+            time.sleep(server_runner.sleeptime)
+            if server_runner.text is None and server_runner.images is None:
                 server_runner.offscreen_canvas = server_runner.matrix.SwapOnVSync(server_runner.offscreen_canvas)
                 continue
     
-            server_runner.offscreen_canvas.Clear()
-            try:
-                len = graphics.DrawText(server_runner.offscreen_canvas,
-                                        server_runner.font,
-                                        server_runner.pos, 12,
-                                        server_runner.textColor,
-                                        server_runner.text)
-                server_runner.pos -= 1
-                if (server_runner.pos + len < 0):
-                    server_runner.pos = server_runner.offscreen_canvas.width
-            except Exception as e:
-                print "Cannot draw text", str(e)
+            if server_runner.text is not None:
+                try:
+                    leng = graphics.DrawText(server_runner.offscreen_canvas,
+                                             server_runner.font,
+                                             server_runner.pos, 12,
+                                             server_runner.textColor,
+                                             server_runner.text)
+                    server_runner.pos -= 1
+                    if (server_runner.pos + leng < 0):
+                        server_runner.pos = server_runner.offscreen_canvas.width
+                except Exception as e: print "Cannot draw text", str(e)
+            elif server_runner.images is not None:
+                im = server_runner.images[server_runner.pos % len(server_runner.images)]
+                server_runner.offscreen_canvas.SetImage(im, min(server_runner.pos-32,0), 0)
+                server_runner.pos += 1
+                if server_runner.pos > 1000: server_runner.images = None
+
             server_runner.offscreen_canvas = server_runner.matrix.SwapOnVSync(server_runner.offscreen_canvas)
     
     def run(self):
+        self.sleeptime = 0.05
         self.text = None
+        self.images = None
+        self.background = (0,0,0)
         self.offscreen_canvas = self.matrix.CreateFrameCanvas()
         self.font = graphics.Font()
         self.font.LoadFont("../../fonts/9x15.bdf")
@@ -100,7 +122,7 @@ class RunServer(SampleBase):
         server_thread.start()
         
         # Start thread for showing text
-        self.showtext()
+        self.show()
     
         server.shutdown()
         server.server_close()

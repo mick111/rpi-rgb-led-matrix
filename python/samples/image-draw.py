@@ -23,26 +23,32 @@ from rgbmatrix import RGBMatrix, RGBMatrixOptions
 
 # Configuration for the matrix
 options = RGBMatrixOptions()
-options.rows = 32
+options.rows = 16
+options.brightness = 60
+options.rotation = 180
 options.chain_length = 1
 options.parallel = 1
-options.hardware_mapping = 'regular'  # If you have an Adafruit HAT: 'adafruit-hat'
+options.hardware_mapping = 'mick111'  # If you have an Adafruit HAT: 'adafruit-hat'
 
 matrix = RGBMatrix(options = options)
 
 # RGB example w/graphics prims.
 # Note, only "RGB" mode is supported currently.
-image = Image.new("RGB", (32, 32))  # Can be larger than matrix if wanted!!
-draw = ImageDraw.Draw(image)  # Declare Draw instance before prims
+import glob
+imagesNames = sorted(glob.glob('Nyan1632/*.gif'))
+#imagesNames = ["Nyan1632/Nyan{}.gif".format(i) for i in range(1,13)]
+images = [Image.open(i).convert("RGB") for i in imagesNames] #Image.new("RGB", (32, 32))  # Can be larger than matrix if wanted!!
+#draw = ImageDraw.Draw(image)  # Declare Draw instance before prims
 # Draw some shapes into image (no immediate effect on matrix)...
-draw.rectangle((0, 0, 31, 31), fill=(0, 0, 0), outline=(0, 0, 255))
-draw.line((0, 0, 31, 31), fill=(255, 0, 0))
-draw.line((0, 31, 31, 0), fill=(0, 255, 0))
+#draw.rectangle((0, 0, 31, 31), fill=(0, 0, 0), outline=(0, 0, 255))
+#draw.line((0, 0, 31, 31), fill=(255, 0, 0))
+#draw.line((0, 31, 31, 0), fill=(0, 255, 0))
 
 # Then scroll image across matrix...
-for n in range(-32, 33):  # Start off top-left, move off bottom-right
-    matrix.Clear()
-    matrix.SetImage(image, n, n)
+for n in range(0, 1000):  # Start off top-left, move off bottom-right
+    matrix.Fill(4,37,83)
+    im = images[n % len(images)]
+    matrix.SetImage(im, min(n-32,0), 0)
     time.sleep(0.05)
 
 matrix.Clear()
