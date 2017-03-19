@@ -33,8 +33,8 @@ HARDWARE_DESC?=mick111
 # (So be prepared for these to be removed at some point)
 ###
 
-
-#DEFINES+=-DDEFAULT_ROTATION=180
+DEFINES+=-DDEFAULT_ROWS=16
+DEFINES+=-DDEFAULT_ROTATION=180
 
 # If you see that your display is inverse, you might have a matrix variant
 # has uses inverse logic for the RGB bits. In that case: uncomment this.
