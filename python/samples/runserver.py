@@ -7,6 +7,7 @@ import threading
 import SocketServer
 from PIL import Image
 import glob
+import argparse
 
 class ServerHandler(SocketServer.BaseRequestHandler):
     def setup(self):
@@ -25,24 +26,42 @@ class ServerHandler(SocketServer.BaseRequestHandler):
             print repr(data)
             commands = data.strip().split(" ", 1)
             command = commands[0].strip().upper()
-            if command not in ["COLOR", "FONT"]:
+            if command not in ["COLOR", "FONT", "GET"] or (command == "GET" and len(commands) > 1 and commands[1].startswith("/CLEAR")):
               self.server.server_runner.text = None
               self.server.server_runner.images = None
               self.server.server_runner.pos = 0
               self.server.server_runner.sleeptime = 0.05
+              self.server.server_runner.hour = None
+              self.server.server_runner.history.write(time.strftime("%b %d %Y %H:%M:%S") + ": [" + self.client_address[0] + "] " + command + "\n")
             if command == "CLEAR":
                 pass
+            elif command == "HOUR":
+                self.server.server_runner.hour = True
+                print "Hoursss"
+                #self.server.server_runner.history.write(time.strftime("%b %d %Y %H:%M:%S") + ": [" + self.client_address[0] + "] " + command + "\n")
             elif command == "NYAN":
                 self.server.server_runner.images = [Image.open(i).convert("RGB") for i in sorted(glob.glob('Nyan1632/*.gif'))]
                 self.server.server_runner.pos = -32
                 self.server.server_runner.sleeptime = 0.07
+                #self.server.server_runner.history.write(time.strftime("%b %d %Y %H:%M:%S") + ": [" + self.client_address[0] + "] NYAN\n")
+                #self.server.server_runner.history.append(time.strftime("%b %d %Y %H:%M:%S") + ": [" + self.client_address[0] + "] NYAN")
+            elif command == "GET" and len(commands) > 1 and commands[1].startswith("/HISTORY"):
+		self.server.server_runner.history.flush()
+                self.server.server_runner.history.seek(0)
+                history = self.server.server_runner.history.readlines()
+                self.request.sendall("""HTTP/1.1 200 OK\r\nDate: Sun, 19 Mar 2017 21:13:55 GMT\r\nServer: Apache/2.4.23 (Unix)\r\nVary: negotiate\r\nTCN: choice\r\nLast-Modified: Mon, 11 Jun 2007 18:53:14 GMT\r\nETag: "2d-432a5e4a73a80"\r\nContent-Type: text/html\r\n\r\n<html><body>{}</body></html>\r\n""".format("<br/>".join(history)))
+                return
             elif command == "GET":
                 self.request.sendall("""HTTP/1.1 200 OK\r\nDate: Sun, 19 Mar 2017 21:13:55 GMT\r\nServer: Apache/2.4.23 (Unix)\r\nVary: negotiate\r\nTCN: choice\r\nLast-Modified: Mon, 11 Jun 2007 18:53:14 GMT\r\nETag: "2d-432a5e4a73a80"\r\nContent-Type: text/html\r\n\r\n<html><body><h1>This is not a website...</h1><h6>Perdu!</h6></body></html>\r\n""")
                 return
             elif command == "TEXT":
-                print "TEXT was :", self.server.server_runner.text
+                #self.server.history.append()
+                #print "TEXT was :", self.server.server_runner.text
                 self.server.server_runner.text = commands[1].decode('utf-8').strip() if len(commands) > 1 else None
-                print "TEXT is :", self.server.server_runner.text
+                #self.server.server_runner.history.write(time.strftime("%b %d %Y %H:%M:%S") + ": [" + self.client_address[0] + "] " + \
+                #                                        str(self.server.server_runner.text.encode('ascii', 'xmlcharrefreplace')) if self.server.server_runner.text else "" + "\n")
+                #self.server.server_runner.history.flush()
+                #print "TEXT is :", self.server.server_runner.text
                 self.server.server_runner.pos = self.server.server_runner.offscreen_canvas.width
             elif command == "COLOR":
                 color = commands[1].replace('\x00', '').strip().lower()
@@ -50,7 +69,7 @@ class ServerHandler(SocketServer.BaseRequestHandler):
                     colors = [int(255 * float(col)) for col in color.split()]
                     self.server.server_runner.textColor = graphics.Color(colors[0], colors[1], colors[2])
                 except Exception as e:
-                    print e
+                    #print e
                     if   color == 'red':     self.server.server_runner.textColor = graphics.Color(255, 0, 0)
                     elif color == 'blue':    self.server.server_runner.textColor = graphics.Color(0, 0, 255)
                     elif color == 'green':   self.server.server_runner.textColor = graphics.Color(0, 255, 0)
@@ -68,16 +87,18 @@ class ThreadedTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
 class RunServer(SampleBase):
     def __init__(self, *args, **kwargs):
         super(RunServer, self).__init__(*args, **kwargs)
+        self.parser.add_argument("--history", type=argparse.FileType('a+'), help="History of messages received by clients..")
         self.parser.add_argument("-l", "--listening-port", type=int, help="The port on which commands are received.", default=23735)
-    
+
     def show(server_runner):
         while True:
             server_runner.offscreen_canvas.Fill(server_runner.background[0],server_runner.background[1],server_runner.background[2])
             time.sleep(server_runner.sleeptime)
-            if server_runner.text is None and server_runner.images is None:
+            if server_runner.hour is None and server_runner.text is None and server_runner.images is None:
                 server_runner.offscreen_canvas = server_runner.matrix.SwapOnVSync(server_runner.offscreen_canvas)
                 continue
-    
+            if server_runner.hour is not None:
+                server_runner.text = time.strftime("%H:%M:%S")
             if server_runner.text is not None:
                 try:
                     leng = graphics.DrawText(server_runner.offscreen_canvas,
@@ -100,6 +121,7 @@ class RunServer(SampleBase):
     def run(self):
         self.sleeptime = 0.05
         self.text = None
+        self.hour = None
         self.images = None
         self.background = (0,0,0)
         self.offscreen_canvas = self.matrix.CreateFrameCanvas()
@@ -107,6 +129,7 @@ class RunServer(SampleBase):
         self.font.LoadFont("../../fonts/9x15.bdf")
         self.textColor = graphics.Color(255, 255, 255)
         self.pos = self.offscreen_canvas.width
+        self.history = self.args.history
 
         # Create a new server
         server = ThreadedTCPServer(('', self.args.listening_port), ServerHandler)
