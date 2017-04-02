@@ -26,7 +26,7 @@ class ServerHandler(SocketServer.BaseRequestHandler):
             print repr(data)
             commands = data.strip().split(" ", 1)
             command = commands[0].strip().upper()
-            if command not in ["COLOR", "FONT", "GET"] or (command == "GET" and len(commands) > 1 and commands[1].startswith("/CLEAR")):
+            if command not in ["BGCOLOR", "COLOR", "FONT", "GET"] or (command == "GET" and len(commands) > 1 and commands[1].startswith("/CLEAR")):
               self.server.server_runner.text = None
               self.server.server_runner.images = None
               self.server.server_runner.pos = 0
@@ -40,6 +40,7 @@ class ServerHandler(SocketServer.BaseRequestHandler):
                 print "Hoursss"
                 #self.server.server_runner.history.write(time.strftime("%b %d %Y %H:%M:%S") + ": [" + self.client_address[0] + "] " + command + "\n")
             elif command == "NYAN":
+                self.server.server_runner.background = (3,37,83)
                 self.server.server_runner.images = [Image.open(i).convert("RGB") for i in sorted(glob.glob('Nyan1632/*.gif'))]
                 self.server.server_runner.pos = -32
                 self.server.server_runner.sleeptime = 0.07
@@ -77,6 +78,13 @@ class ServerHandler(SocketServer.BaseRequestHandler):
                     elif color == 'cyan':    self.server.server_runner.textColor = graphics.Color(0, 255, 255)
                     elif color == 'magenta': self.server.server_runner.textColor = graphics.Color(255, 0, 255)
                     elif color == 'white':   self.server.server_runner.textColor = graphics.Color(255, 255, 255)
+            elif command == "BGCOLOR":
+                color = commands[1].replace('\x00', '').strip().lower()
+                try:
+                    colors = [int(255 * float(col)) for col in color.split()]
+                    if len(colors) == 3 : self.server.server_runner.background = colors
+                except Exception as e:
+                    pass
             elif command == "FONT":
                 self.server.server_runner.font.LoadFont("../../fonts/unifont.bdf")
         print "Goodbye {}".format(self.client_address[0])
