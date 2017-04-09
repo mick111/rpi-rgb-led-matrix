@@ -37,7 +37,7 @@ class ServerHandler(SocketServer.BaseRequestHandler):
             print repr(data)
 
             # Reset dimming
-            self.server.server_runner.timeBeforeDimming  = time.time() + 600
+            self.server.server_runner.timeBeforeDimming = time.time() + 600
 
             commands = data.strip().split(" ", 1)
             command = commands[0].strip().upper()
@@ -48,6 +48,9 @@ class ServerHandler(SocketServer.BaseRequestHandler):
                 self.server.server_runner.addToHistory("[" + self.client_address[0] + "] " + data)
             if command == "CLEAR":
                 # Nothing to do, we already reset the display
+                pass
+            elif command == "DEDIM":
+                # Nothing to do, we already reset the timer
                 pass
             elif command == "HOUR":
                 self.server.server_runner.hour = True
