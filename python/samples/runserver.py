@@ -14,38 +14,46 @@ class ServerHandler(SocketServer.BaseRequestHandler):
         pass
     
     def handle(self):
+        # Receive a new connection from the outside world
         print "Connection from {}".format(self.client_address[0])
+        # Keep connection alive
         while True:
+          # Read some data, we assume that we will not get more than 1024 bytes per received commands
           data = self.request.recv(1024)
-          print "Receive from {}".format(self.client_address[0])
+
+          print "Received from {}".format(self.client_address[0])
+          # Data is none if the client disconnected
           if not data: break
+          # Parse received data. Each commands must be separated by a '\n'
           datas = data.split("\n")
+
+          # Show the data to be processed                              
           print repr(datas)
+
           for data in datas:
-            if data == '': break
+            # Go on next command
+            if data == '': continue
+
             print repr(data)
+
             commands = data.strip().split(" ", 1)
             command = commands[0].strip().upper()
+
+            # Reset the display and log the command in the HISTORY for some commands
             if command not in ["BGCOLOR", "COLOR", "FONT", "GET"] or (command == "GET" and len(commands) > 1 and commands[1].startswith("/CLEAR")):
-              self.server.server_runner.text = None
-              self.server.server_runner.images = None
-              self.server.server_runner.pos = 0
-              self.server.server_runner.sleeptime = 0.05
-              self.server.server_runner.hour = None
+              self.server.server_runner.reset()
               self.server.server_runner.history.write(time.strftime("%b %d %Y %H:%M:%S") + ": [" + self.client_address[0] + "] " + command + "\n")
             if command == "CLEAR":
+                # Nothing to do, we already reset the display
                 pass
             elif command == "HOUR":
                 self.server.server_runner.hour = True
-                print "Hoursss"
-                #self.server.server_runner.history.write(time.strftime("%b %d %Y %H:%M:%S") + ": [" + self.client_address[0] + "] " + command + "\n")
             elif command == "NYAN":
+                # Show NyanCat
                 self.server.server_runner.background = (3,37,83)
                 self.server.server_runner.images = [Image.open(i).convert("RGB") for i in sorted(glob.glob('Nyan1632/*.gif'))]
                 self.server.server_runner.pos = -32
                 self.server.server_runner.sleeptime = 0.07
-                #self.server.server_runner.history.write(time.strftime("%b %d %Y %H:%M:%S") + ": [" + self.client_address[0] + "] NYAN\n")
-                #self.server.server_runner.history.append(time.strftime("%b %d %Y %H:%M:%S") + ": [" + self.client_address[0] + "] NYAN")
             elif command == "GET" and len(commands) > 1 and commands[1].startswith("/HISTORY"):
 		self.server.server_runner.history.flush()
                 self.server.server_runner.history.seek(0)
@@ -97,6 +105,13 @@ class RunServer(SampleBase):
         super(RunServer, self).__init__(*args, **kwargs)
         self.parser.add_argument("--history", type=argparse.FileType('a+'), help="History of messages received by clients..")
         self.parser.add_argument("-l", "--listening-port", type=int, help="The port on which commands are received.", default=23735)
+
+    def reset(self):
+        self.text = None
+        self.images = None
+        self.pos = 0
+        self.sleeptime = 0.05
+        self.hour = None
 
     def show(server_runner):
         while True:
