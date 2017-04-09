@@ -36,11 +36,12 @@ class ServerHandler(SocketServer.BaseRequestHandler):
 
             print repr(data)
 
-            # Reset dimming
-            self.server.server_runner.timeBeforeDimming = time.time() + 600
-
             commands = data.strip().split(" ", 1)
             command = commands[0].strip().upper()
+            
+            # Reset dimming
+            if command not in ["GET"]:
+                self.server.server_runner.timeBeforeDimming = time.time() + 300
 
             # Reset the display and log the command in the HISTORY for some commands
             if command not in ["BGCOLOR", "COLOR", "FONT", "GET", "DEDIM"] or (command == "GET" and len(commands) > 1 and commands[1].startswith("/CLEAR")):
@@ -50,8 +51,8 @@ class ServerHandler(SocketServer.BaseRequestHandler):
                 # Nothing to do, we already reset the display
                 pass
             elif command == "DEDIM":
-                # Nothing to do, we already reset the timer
-                pass
+                # Reset dimming with lower value
+                self.server.server_runner.timeBeforeDimming = time.time() + 30
             elif command == "HOUR":
                 self.server.server_runner.hour = True
             elif command == "NYAN" or command == "NYAN32":
@@ -135,7 +136,7 @@ class RunServer(SampleBase):
             
             # Dimm brightness after a certain amount of time
             timeBeforeDimming = self.timeBeforeDimming - time.time()
-            self.matrix.brightness = 0 if timeBeforeDimming < 0 else self.max_brightness if timeBeforeDimming > 100 else self.max_brightness * (timeBeforeDimming / 100)
+            self.matrix.brightness = 0 if timeBeforeDimming < 0 else self.max_brightness if timeBeforeDimming > 30 else (self.max_brightness * timeBeforeDimming) / 30
             
             # Check if there is something to show
             if timeBeforeDimming < 0 or (self.hour is None and self.text is None and self.images is None):
@@ -189,7 +190,7 @@ class RunServer(SampleBase):
 
         self.history = self.args.history
         
-        self.timeBeforeDimming  = time.time() + 600
+        self.timeBeforeDimming  = time.time() + 300
         self.max_brightness = self.matrix.brightness
         
         # Create a new server
