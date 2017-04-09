@@ -133,6 +133,10 @@ class RunServer(SampleBase):
         while True:
             # Wait for a certain time
             time.sleep(self.sleeptime)
+        
+            # Reset dimming to 15 sec each 15 minutes when displaying time
+            if self.hour and (time.localtime().tm_min % 15) == 0 and time.localtime().tm_sec < 10:
+                self.timeBeforeDimming = max(time.time() + 15, self.timeBeforeDimming)
             
             # Dimm brightness after a certain amount of time
             timeBeforeDimming = self.timeBeforeDimming - time.time()
@@ -175,8 +179,6 @@ class RunServer(SampleBase):
 
             self.offscreen_canvas = self.matrix.SwapOnVSync(self.offscreen_canvas)
 
-        if self.hour and (time.localtime().tm_min % 15) == 0 and time.localtime().tm_sec < 10:
-            self.timeBeforeDimming = max(time.time() + 15, self.timeBeforeDimming)
 
     def run(self):
         self.reset()
