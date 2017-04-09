@@ -45,7 +45,7 @@ class ServerHandler(SocketServer.BaseRequestHandler):
             # Reset the display and log the command in the HISTORY for some commands
             if command not in ["BGCOLOR", "COLOR", "FONT", "GET", "DEDIM"] or (command == "GET" and len(commands) > 1 and commands[1].startswith("/CLEAR")):
                 self.server.server_runner.reset()
-                self.server.server_runner.addToHistory("[" + self.client_address[0] + "] " + command)
+                self.server.server_runner.addToHistory("[" + self.client_address[0] + "] " + data)
             if command == "CLEAR":
                 # Nothing to do, we already reset the display
                 pass
