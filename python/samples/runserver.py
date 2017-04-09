@@ -136,7 +136,7 @@ class RunServer(SampleBase):
             
             # Dimm brightness after a certain amount of time
             timeBeforeDimming = self.timeBeforeDimming - time.time()
-            self.matrix.brightness = 0 if timeBeforeDimming < 0 else self.max_brightness if timeBeforeDimming > 30 else (self.max_brightness * timeBeforeDimming) / 30
+            self.matrix.brightness = 0 if timeBeforeDimming < 0 else self.max_brightness if timeBeforeDimming > 15 else (self.max_brightness * timeBeforeDimming) / 15
             
             # Check if there is something to show
             if timeBeforeDimming < 0 or (self.hour is None and self.text is None and self.images is None):
@@ -174,7 +174,10 @@ class RunServer(SampleBase):
                     self.images = None
 
             self.offscreen_canvas = self.matrix.SwapOnVSync(self.offscreen_canvas)
-    
+
+        if self.hour and (time.localtime().tm_min % 15) == 0 and time.localtime().tm_sec < 10:
+            self.timeBeforeDimming = max(time.time() + 15, self.timeBeforeDimming)
+
     def run(self):
         self.reset()
         
