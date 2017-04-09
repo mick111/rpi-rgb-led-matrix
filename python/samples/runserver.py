@@ -58,7 +58,7 @@ class ServerHandler(SocketServer.BaseRequestHandler):
                 self.server.server_runner.pos = -64 if command == "NYAN" else -32
                 self.server.server_runner.sleeptime = 0.07
             elif command == "GET" and len(commands) > 1 and commands[1].startswith("/HISTORY"):
-                history = self.getHistory()
+                history = self.server.server_runner.getHistory()
                 self.request.sendall("""HTTP/1.1 200 OK\r\nDate: Sun, 19 Mar 2017 21:13:55 GMT\r\nServer: Apache/2.4.23 (Unix)\r\nVary: negotiate\r\nTCN: choice\r\nLast-Modified: Mon, 11 Jun 2007 18:53:14 GMT\r\nETag: "2d-432a5e4a73a80"\r\nContent-Type: text/html\r\n\r\n<html><body>{}</body></html>\r\n""".format("<br/>".join(history)))
                 return
             elif command == "GET":
@@ -107,7 +107,7 @@ class RunServer(SampleBase):
         self.parser.add_argument("-l", "--listening-port", type=int, help="The port on which commands are received.", default=23735)
 
     # Add a text line in history
-    def addToHistory(self, data)
+    def addToHistory(self, data):
         self.history.write(time.strftime("%b %d %Y %H:%M:%S") + ": " + data + "\n")
 
     # Get all content of history, in a list of lines
