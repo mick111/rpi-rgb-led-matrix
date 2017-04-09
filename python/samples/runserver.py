@@ -53,7 +53,7 @@ class ServerHandler(SocketServer.BaseRequestHandler):
                 self.server.server_runner.hour = True
             elif command == "NYAN" or command == "NYAN32":
                 # Show NyanCat
-                self.server.server_runner.background = graphics.Color(3,37,83)
+                self.server.server_runner.background = (3,37,83)
                 self.server.server_runner.images = [Image.open(i).convert("RGB") for i in sorted(glob.glob('Nyan1664/*.gif'))]
                 self.server.server_runner.pos = -64 if command == "NYAN" else -32
                 self.server.server_runner.sleeptime = 0.07
@@ -70,17 +70,17 @@ class ServerHandler(SocketServer.BaseRequestHandler):
             elif (command == "COLOR" or command == "BGCOLOR") and len(commands) > 1:
                 color = commands[1].replace('\x00', '').strip().lower()
                 gColor = None
-                if   color == 'red':     gColor = graphics.Color(255, 0, 0)
-                elif color == 'blue':    gColor = graphics.Color(0, 0, 255)
-                elif color == 'green':   gColor = graphics.Color(0, 255, 0)
-                elif color == 'yellow':  gColor = graphics.Color(255, 255, 0)
-                elif color == 'cyan':    gColor = graphics.Color(0, 255, 255)
-                elif color == 'magenta': gColor = graphics.Color(255, 0, 255)
-                elif color == 'white':   gColor = graphics.Color(255, 255, 255)
+                if   color == 'red':     gColor = (255, 0, 0)
+                elif color == 'blue':    gColor = (0, 0, 255)
+                elif color == 'green':   gColor = (0, 255, 0)
+                elif color == 'yellow':  gColor = (255, 255, 0)
+                elif color == 'cyan':    gColor = (0, 255, 255)
+                elif color == 'magenta': gColor = (255, 0, 255)
+                elif color == 'white':   gColor = (255, 255, 255)
                 else:
                     try:
                         components = [int(255 * float(col)) for col in color.split()]
-                        if len(components) == 3 : gColor = graphics.Color(components[0], components[1], components[2])
+                        if len(components) == 3 : gColor = components
                     except Exception as e:
                         gColor = None
                 if command == "COLOR" and gColor is not None:
@@ -142,15 +142,16 @@ class RunServer(SampleBase):
                 continue
         
             # First, fill the background
-            self.offscreen_canvas.Fill(self.background)
+            self.offscreen_canvas.Fill(self.background[0], self.background[1], self.background[2])
             
             # In order of priority: Hour -> Text -> Image
             if self.text is not None or self.hour is not None:
                 try:
+                    color = graphics.Color(self.textColor[0], self.textColor[1], self.textColor[2])
                     leng = graphics.DrawText(self.offscreen_canvas, # Canvas destination
                                              self.font,             # Font to show
                                              self.pos, 12,          # Position
-                                             self.textColor,        # Color
+                                             color, # Color
                                              self.text if self.hour is None else time.strftime("%H:%M:%S")) # Data to draw
                     # Next position is shifted by one on the left
                     self.pos -= 1
@@ -173,8 +174,8 @@ class RunServer(SampleBase):
     def run(self):
         self.reset()
         
-        self.background = graphics.Color(0, 0, 0)
-        self.textColor = graphics.Color(255, 255, 255)
+        self.background = (0, 0, 0)
+        self.textColor = (255, 255, 255)
         
         self.offscreen_canvas = self.matrix.CreateFrameCanvas()
         
