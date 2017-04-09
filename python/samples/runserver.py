@@ -36,65 +36,65 @@ class ServerHandler(SocketServer.BaseRequestHandler):
 
             print repr(data)
 
+            # Reset dimming
+            self.server.server_runner.timeBeforeDimming  = time.time() + 600
+
             commands = data.strip().split(" ", 1)
             command = commands[0].strip().upper()
 
             # Reset the display and log the command in the HISTORY for some commands
-            if command not in ["BGCOLOR", "COLOR", "FONT", "GET"] or (command == "GET" and len(commands) > 1 and commands[1].startswith("/CLEAR")):
-              self.server.server_runner.reset()
-              self.server.server_runner.history.write(time.strftime("%b %d %Y %H:%M:%S") + ": [" + self.client_address[0] + "] " + command + "\n")
+            if command not in ["BGCOLOR", "COLOR", "FONT", "GET", "DEDIM"] or (command == "GET" and len(commands) > 1 and commands[1].startswith("/CLEAR")):
+                self.server.server_runner.reset()
+                self.server.server_runner.addToHistory("[" + self.client_address[0] + "] " + command)
             if command == "CLEAR":
                 # Nothing to do, we already reset the display
                 pass
             elif command == "HOUR":
                 self.server.server_runner.hour = True
-            elif command == "NYAN":
+            elif command == "NYAN" or command == "NYAN32":
                 # Show NyanCat
-                self.server.server_runner.background = (3,37,83)
-                self.server.server_runner.images = [Image.open(i).convert("RGB") for i in sorted(glob.glob('Nyan1632/*.gif'))]
-                self.server.server_runner.pos = -32
+                self.server.server_runner.background = graphics.Color(3,37,83)
+                self.server.server_runner.images = [Image.open(i).convert("RGB") for i in sorted(glob.glob('Nyan1664/*.gif'))]
+                self.server.server_runner.pos = -64 if command == "NYAN" else -32
                 self.server.server_runner.sleeptime = 0.07
             elif command == "GET" and len(commands) > 1 and commands[1].startswith("/HISTORY"):
-		self.server.server_runner.history.flush()
-                self.server.server_runner.history.seek(0)
-                history = self.server.server_runner.history.readlines()
+                history = self.getHistory()
                 self.request.sendall("""HTTP/1.1 200 OK\r\nDate: Sun, 19 Mar 2017 21:13:55 GMT\r\nServer: Apache/2.4.23 (Unix)\r\nVary: negotiate\r\nTCN: choice\r\nLast-Modified: Mon, 11 Jun 2007 18:53:14 GMT\r\nETag: "2d-432a5e4a73a80"\r\nContent-Type: text/html\r\n\r\n<html><body>{}</body></html>\r\n""".format("<br/>".join(history)))
                 return
             elif command == "GET":
                 self.request.sendall("""HTTP/1.1 200 OK\r\nDate: Sun, 19 Mar 2017 21:13:55 GMT\r\nServer: Apache/2.4.23 (Unix)\r\nVary: negotiate\r\nTCN: choice\r\nLast-Modified: Mon, 11 Jun 2007 18:53:14 GMT\r\nETag: "2d-432a5e4a73a80"\r\nContent-Type: text/html\r\n\r\n<html><body><h1>This is not a website...</h1><h6>Perdu!</h6></body></html>\r\n""")
                 return
-            elif command == "TEXT":
-                #self.server.history.append()
-                #print "TEXT was :", self.server.server_runner.text
-                self.server.server_runner.text = commands[1].decode('utf-8').strip() if len(commands) > 1 else None
-                #self.server.server_runner.history.write(time.strftime("%b %d %Y %H:%M:%S") + ": [" + self.client_address[0] + "] " + \
-                #                                        str(self.server.server_runner.text.encode('ascii', 'xmlcharrefreplace')) if self.server.server_runner.text else "" + "\n")
-                #self.server.server_runner.history.flush()
-                #print "TEXT is :", self.server.server_runner.text
+            elif command == "TEXT" and len(commands) > 1:
+                self.server.server_runner.text = commands[1].decode('utf-8').strip()
                 self.server.server_runner.pos = self.server.server_runner.offscreen_canvas.width
-            elif command == "COLOR":
+            elif (command == "COLOR" or command == "BGCOLOR") and len(commands) > 1:
                 color = commands[1].replace('\x00', '').strip().lower()
-                try:
-                    colors = [int(255 * float(col)) for col in color.split()]
-                    self.server.server_runner.textColor = graphics.Color(colors[0], colors[1], colors[2])
-                except Exception as e:
-                    #print e
-                    if   color == 'red':     self.server.server_runner.textColor = graphics.Color(255, 0, 0)
-                    elif color == 'blue':    self.server.server_runner.textColor = graphics.Color(0, 0, 255)
-                    elif color == 'green':   self.server.server_runner.textColor = graphics.Color(0, 255, 0)
-                    elif color == 'yellow':  self.server.server_runner.textColor = graphics.Color(255, 255, 0)
-                    elif color == 'cyan':    self.server.server_runner.textColor = graphics.Color(0, 255, 255)
-                    elif color == 'magenta': self.server.server_runner.textColor = graphics.Color(255, 0, 255)
-                    elif color == 'white':   self.server.server_runner.textColor = graphics.Color(255, 255, 255)
-            elif command == "BGCOLOR":
-                color = commands[1].replace('\x00', '').strip().lower()
-                try:
-                    colors = [int(255 * float(col)) for col in color.split()]
-                    if len(colors) == 3 : self.server.server_runner.background = colors
-                except Exception as e:
-                    pass
-            elif command == "FONT":
-                self.server.server_runner.font.LoadFont("../../fonts/unifont.bdf")
+                gColor = None
+                if   color == 'red':     gColor = graphics.Color(255, 0, 0)
+                elif color == 'blue':    gColor = graphics.Color(0, 0, 255)
+                elif color == 'green':   gColor = graphics.Color(0, 255, 0)
+                elif color == 'yellow':  gColor = graphics.Color(255, 255, 0)
+                elif color == 'cyan':    gColor = graphics.Color(0, 255, 255)
+                elif color == 'magenta': gColor = graphics.Color(255, 0, 255)
+                elif color == 'white':   gColor = graphics.Color(255, 255, 255)
+                else:
+                    try:
+                        components = [int(255 * float(col)) for col in color.split()]
+                        if len(components) == 3 : gColor = graphics.Color(components[0], components[1], components[2])
+                    except Exception as e:
+                        gColor = None
+                if command == "COLOR" and gColor is not None:
+                    self.server.server_runner.textColor = gColor
+                elif command == "BGCOLOR" and gColor is not None:
+                    self.server.server_runner.background = gColor
+            elif command == "FONT" and len(commands) > 1:
+                # Get the font name to show
+                fontname = commands[1].replace('\x00', '').strip().lower()
+                # Go through all available fonts
+                for i in glob.glob('../../fonts/*.bdf'):
+                    if fontname in i.lower():
+                        self.server.server_runner.font.LoadFont(i)
+                        break
         print "Goodbye {}".format(self.client_address[0])
 
 class ThreadedTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
@@ -106,54 +106,88 @@ class RunServer(SampleBase):
         self.parser.add_argument("--history", type=argparse.FileType('a+'), help="History of messages received by clients..")
         self.parser.add_argument("-l", "--listening-port", type=int, help="The port on which commands are received.", default=23735)
 
+    # Add a text line in history
+    def addToHistory(self, data)
+        self.history.write(time.strftime("%b %d %Y %H:%M:%S") + ": " + data + "\n")
+
+    # Get all content of history, in a list of lines
+    def getHistory(self):
+        self.history.flush()
+        self.history.seek(0)
+        return self.history.readlines()
+
+    # Reset the display
     def reset(self):
         self.text = None
         self.images = None
+        self.hour = None
         self.pos = 0
         self.sleeptime = 0.05
-        self.hour = None
-
-    def show(server_runner):
+    
+    def show(self):
+        # Run forever
         while True:
-            server_runner.offscreen_canvas.Fill(server_runner.background[0],server_runner.background[1],server_runner.background[2])
-            time.sleep(server_runner.sleeptime)
-            if server_runner.hour is None and server_runner.text is None and server_runner.images is None:
-                server_runner.offscreen_canvas = server_runner.matrix.SwapOnVSync(server_runner.offscreen_canvas)
+            # Wait for a certain time
+            time.sleep(self.sleeptime)
+            
+            # Dimm brightness after a certain amount of time
+            timeBeforeDimming = self.timeBeforeDimming - time.time()
+            self.matrix.brightness = 0 if timeBeforeDimming < 0 else self.max_brightness if timeBeforeDimming > 100 else self.max_brightness * (timeBeforeDimming / 100)
+            
+            # Check if there is something to show
+            if timeBeforeDimming < 0 or (self.hour is None and self.text is None and self.images is None):
+                # Reset the canvas
+                self.offscreen_canvas.Clear()
+                self.offscreen_canvas = self.matrix.SwapOnVSync(self.offscreen_canvas)
                 continue
-            if server_runner.hour is not None:
-                server_runner.text = time.strftime("%H:%M:%S")
-            if server_runner.text is not None:
+        
+            # First, fill the background
+            self.offscreen_canvas.Fill(self.background)
+            
+            # In order of priority: Hour -> Text -> Image
+            if self.text is not None or self.hour is not None:
                 try:
-                    leng = graphics.DrawText(server_runner.offscreen_canvas,
-                                             server_runner.font,
-                                             server_runner.pos, 12,
-                                             server_runner.textColor,
-                                             server_runner.text)
-                    server_runner.pos -= 1
-                    if (server_runner.pos + leng < 0):
-                        server_runner.pos = server_runner.offscreen_canvas.width
-                except Exception as e: print "Cannot draw text", str(e)
-            elif server_runner.images is not None:
-                im = server_runner.images[server_runner.pos % len(server_runner.images)]
-                server_runner.offscreen_canvas.SetImage(im, min(server_runner.pos-32,0), 0)
-                server_runner.pos += 1
-                if server_runner.pos > 1000: server_runner.images = None
+                    leng = graphics.DrawText(self.offscreen_canvas, # Canvas destination
+                                             self.font,             # Font to show
+                                             self.pos, 12,          # Position
+                                             self.textColor,        # Color
+                                             self.text if self.hour is None else time.strftime("%H:%M:%S")) # Data to draw
+                    # Next position is shifted by one on the left
+                    self.pos -= 1
+                    if (self.pos + leng < 0):
+                        # Reset the position
+                        self.pos = self.offscreen_canvas.width
+                except Exception as e:
+                    print "Cannot draw text", str(e)
 
-            server_runner.offscreen_canvas = server_runner.matrix.SwapOnVSync(server_runner.offscreen_canvas)
+            elif self.images is not None:
+                im = self.images[self.pos % len(self.images)]
+                width, height = im.size
+                self.offscreen_canvas.SetImage(im, min(self.pos-width, self.offscreen_canvas.width-width), 0)
+                self.pos += 1
+                if self.pos > 1000:
+                    self.images = None
+
+            self.offscreen_canvas = self.matrix.SwapOnVSync(self.offscreen_canvas)
     
     def run(self):
-        self.sleeptime = 0.05
-        self.text = None
-        self.hour = None
-        self.images = None
-        self.background = (0,0,0)
+        self.reset()
+        
+        self.background = graphics.Color(0, 0, 0)
+        self.textColor = graphics.Color(255, 255, 255)
+        
         self.offscreen_canvas = self.matrix.CreateFrameCanvas()
+        
         self.font = graphics.Font()
         self.font.LoadFont("../../fonts/9x15.bdf")
-        self.textColor = graphics.Color(255, 255, 255)
-        self.pos = self.offscreen_canvas.width
-        self.history = self.args.history
 
+        self.pos = self.offscreen_canvas.width
+
+        self.history = self.args.history
+        
+        self.timeBeforeDimming  = time.time() + 600
+        self.max_brightness = self.matrix.brightness
+        
         # Create a new server
         server = ThreadedTCPServer(('', self.args.listening_port), ServerHandler)
         server.server_runner = self
