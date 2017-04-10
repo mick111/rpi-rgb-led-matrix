@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 # Run a server to make things with the display
 from samplebase import SampleBase
 from rgbmatrix import graphics
@@ -178,7 +179,7 @@ class RunServer(SampleBase):
                   self.fontLittle,       # Font to show
                   0, 15,                  # Position
                   graphics.Color(255, 255, 255), # Color
-                  "{:02d}°{:02d}°".format(insideTemperature("salon"), insideTemperature("chambre")) # Data to draw
+                  u"{:02d}°{:02d}°".format(insideTemperature("salon"), insideTemperature("chambre")) # Data to draw
                 )
     
                 self.offscreen_canvas = self.matrix.SwapOnVSync(self.offscreen_canvas)
