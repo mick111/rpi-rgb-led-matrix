@@ -179,7 +179,7 @@ class RunServer(SampleBase):
                 graphics.DrawText(
                                   self.offscreen_canvas, # Canvas destination
                                   self.fontLittle,       # Font to show
-                                  10, 7,                 # Position
+                                  8, 7,                 # Position
                                   graphics.Color(255, 255, 255), # Color
                                   "{}".format(time.strftime("%H:%M" if int(timeBeforeDimming) % 2 == 0 else "%H %M")) # Data to draw
                                   )
