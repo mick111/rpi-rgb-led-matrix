@@ -8,6 +8,25 @@ import SocketServer
 from PIL import Image
 import glob
 import argparse
+import os
+import requests
+import json
+
+def insideTemperature(room):
+    ds = {"chambre": "28-03164783ecff",
+     "salon": "28-0416526fcfff"}[room]
+    f = open(os.path.join("/sys/bus/w1/devices/", ds, "w1_slave")).read()
+    try:
+        return float(int(f.split('\n')[1].split('=')[1])/100)/10
+    except:
+        return None
+
+def outsideTemperature():
+    try:
+        return float(requests.get("http://api.openweathermap.org/data/2.5/weather?id=2968815&APPID={}&units=metric".format(open("openweathermap_apikey").read().strip())).json()['main']['temp'])
+    except:
+        return None
+
 
 class ServerHandler(SocketServer.BaseRequestHandler):
     def setup(self):
@@ -146,7 +165,16 @@ class RunServer(SampleBase):
             if timeBeforeDimming < 0 or (self.hour is None and self.text is None and self.images is None):
                 # Reset the canvas
                 self.offscreen_canvas.Clear()
+                self.matrix.brightness = self.max_brightness / 10
+                graphics.DrawText(
+                                  self.offscreen_canvas, # Canvas destination
+                                  self.fontLittle,       # Font to show
+                                  0, 12,                 # Position
+                                  graphics.Color(255, 255, 255), # Color
+                                  "{} {} {}".format(time.strftime("%H:%M"), insideTemperature(), outsideTemperature()) # Data to draw
+                )
                 self.offscreen_canvas = self.matrix.SwapOnVSync(self.offscreen_canvas)
+                time.sleep(1)
                 continue
         
             # First, fill the background
@@ -191,6 +219,9 @@ class RunServer(SampleBase):
         self.font = graphics.Font()
         self.font.LoadFont("../../fonts/9x15.bdf")
 
+        self.fontLittle = graphics.Font()
+        self.fontLittle.LoadFont("../../fonts/5x7.bdf")
+        
         self.pos = self.offscreen_canvas.width
 
         self.history = self.args.history
