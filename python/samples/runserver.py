@@ -12,20 +12,30 @@ import os
 import requests
 import json
 
-def insideTemperature(room):
-    ds = {"chambre": "28-03164783ecff",
-     "salon": "28-0416526fcfff"}[room]
-    f = open(os.path.join("/sys/bus/w1/devices/", ds, "w1_slave")).read()
-    try:
-        return float(int(f.split('\n')[1].split('=')[1])/100)/10
-    except:
-        return None
+class Temps():
+    lastupdate = time.time() - 100
+    ins = {"chambre": 0.0, "salon": 0.0}
+    out = 0.0
+        
+    @classmethod
+    def updateTemps(cls):
+        for room in ["chambre", "salon"]:
+            ds = {"chambre": "28-03164783ecff",
+                  "salon": "28-0416526fcfff"}[room]
+            f = open(os.path.join("/sys/bus/w1/devices/", ds, "w1_slave")).read()
+            cls.ins[room] = float(f.split('\n')[1].split('=')[1])/1000
+        cls.out = float(requests.get("http://api.openweathermap.org/data/2.5/weather?id=2968815&APPID={}&units=metric".format(open("openweathermap_apikey").read().strip())).json()['main']['temp'])
+        cls.lastupdate = time.time()
 
-def outsideTemperature():
-    try:
-        return float(requests.get("http://api.openweathermap.org/data/2.5/weather?id=2968815&APPID={}&units=metric".format(open("openweathermap_apikey").read().strip())).json()['main']['temp'])
-    except:
-        return None
+    @classmethod
+    def insideTemperature(cls, room):
+        if time.time() - cls.lastupdate < 60: cls.updateTemps()
+        return cls.ins[room]
+
+    @classmethod
+    def outsideTemperature(cls):
+        if time.time() - cls.lastupdate < 60: cls.updateTemps()
+        return cls.out
 
 
 class ServerHandler(SocketServer.BaseRequestHandler):
@@ -171,14 +181,14 @@ class RunServer(SampleBase):
                                   self.fontLittle,       # Font to show
                                   0, 7,                 # Position
                                   graphics.Color(255, 255, 255), # Color
-                                  "{} {:2.0f}".format(time.strftime("%H:%M" if int(timeBeforeDimming) % 2 == 0 else "%H %M"), outsideTemperature()) # Data to draw
+                                  "{} {:2.0f}".format(time.strftime("%H:%M" if int(timeBeforeDimming) % 2 == 0 else "%H %M"), Temps().outsideTemperature()) # Data to draw
                                   )
                 graphics.DrawText(
                   self.offscreen_canvas, # Canvas destination
                   self.fontLittle,       # Font to show
                   0, 15,                  # Position
                   graphics.Color(255, 255, 255), # Color
-                  u"{:2.0f} {:2.0f}".format(insideTemperature("salon"), insideTemperature("chambre")) # Data to draw
+                  u"{:2.0f} {:2.0f}".format(Temps().insideTemperature("salon"), Temps().insideTemperature("chambre")) # Data to draw
                 )
     
                 self.offscreen_canvas = self.matrix.SwapOnVSync(self.offscreen_canvas)
