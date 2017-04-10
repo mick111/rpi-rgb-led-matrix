@@ -175,19 +175,19 @@ class RunServer(SampleBase):
             if timeBeforeDimming < 0 or (self.hour is None and self.text is None and self.images is None):
                 # Reset the canvas
                 self.offscreen_canvas.Clear()
-                self.matrix.brightness = self.max_brightness / 10
+                self.matrix.brightness = self.max_brightness / 20
                 graphics.DrawText(
                                   self.offscreen_canvas, # Canvas destination
                                   self.fontLittle,       # Font to show
                                   6, 7,                  # Position
-                                  graphics.Color(255, 255, 255), # Color
+                                  graphics.Color(self.textColor[0], self.textColor[1], self.textColor[2]), # graphics.Color(255, 255, 255), # Color
                                   "{}".format(time.strftime("%H:%M" if int(timeBeforeDimming) % 2 == 0 else "%H %M")) # Data to draw
                                   )
                 graphics.DrawText(
                   self.offscreen_canvas, # Canvas destination
                   self.fontLittle,       # Font to show
                   0, 15,                  # Position
-                  graphics.Color(255, 255, 255), # Color
+                  graphics.Color(self.textColor[0], self.textColor[1], self.textColor[2]),#graphics.Color(255, 255, 255), # Color
                   u"{:2.0f} {:2.0f} {:2.0f}".format(Temps().insideTemperature("salon"), Temps().insideTemperature("chambre"), Temps().outsideTemperature()) # Data to draw
                 )
     
