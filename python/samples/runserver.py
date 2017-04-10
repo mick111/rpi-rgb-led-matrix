@@ -169,10 +169,18 @@ class RunServer(SampleBase):
                 graphics.DrawText(
                                   self.offscreen_canvas, # Canvas destination
                                   self.fontLittle,       # Font to show
-                                  0, 12,                 # Position
+                                  0, 15,                 # Position
                                   graphics.Color(255, 255, 255), # Color
-                                  "{} {} {} {}".format(time.strftime("%H:%M"), insideTemperature("salon"), insideTemperature("chambre"), outsideTemperature()) # Data to draw
+                                  "{} {}".format(time.strftime("%H:%M" if int(timeBeforeDimming) % 2 == 0 else "%H %M"), outsideTemperature()) # Data to draw
+                                  )
+                graphics.DrawText(
+                  self.offscreen_canvas, # Canvas destination
+                  self.fontLittle,       # Font to show
+                  0, 7,                  # Position
+                  graphics.Color(255, 255, 255), # Color
+                  "{} {}".format(insideTemperature("salon"), insideTemperature("chambre")) # Data to draw
                 )
+    
                 self.offscreen_canvas = self.matrix.SwapOnVSync(self.offscreen_canvas)
                 time.sleep(1)
                 continue
@@ -220,7 +228,7 @@ class RunServer(SampleBase):
         self.font.LoadFont("../../fonts/9x15.bdf")
 
         self.fontLittle = graphics.Font()
-        self.fontLittle.LoadFont("../../fonts/5x7.bdf")
+        self.fontLittle.LoadFont("../../fonts/4x6.bdf")
         
         self.pos = self.offscreen_canvas.width
 
