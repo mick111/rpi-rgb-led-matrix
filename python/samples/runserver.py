@@ -169,16 +169,16 @@ class RunServer(SampleBase):
                 graphics.DrawText(
                                   self.offscreen_canvas, # Canvas destination
                                   self.fontLittle,       # Font to show
-                                  0, 15,                 # Position
+                                  0, 7,                 # Position
                                   graphics.Color(255, 255, 255), # Color
-                                  "{} {}".format(time.strftime("%H:%M" if int(timeBeforeDimming) % 2 == 0 else "%H %M"), outsideTemperature()) # Data to draw
+                                  "{}{:02d}°".format(time.strftime("%H:%M" if int(timeBeforeDimming) % 2 == 0 else "%H %M"), outsideTemperature()) # Data to draw
                                   )
                 graphics.DrawText(
                   self.offscreen_canvas, # Canvas destination
                   self.fontLittle,       # Font to show
-                  0, 7,                  # Position
+                  0, 15,                  # Position
                   graphics.Color(255, 255, 255), # Color
-                  "{} {}".format(insideTemperature("salon"), insideTemperature("chambre")) # Data to draw
+                  "{:02d}°{:02d}°".format(insideTemperature("salon"), insideTemperature("chambre")) # Data to draw
                 )
     
                 self.offscreen_canvas = self.matrix.SwapOnVSync(self.offscreen_canvas)
