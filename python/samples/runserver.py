@@ -171,7 +171,7 @@ class RunServer(SampleBase):
                                   self.fontLittle,       # Font to show
                                   0, 12,                 # Position
                                   graphics.Color(255, 255, 255), # Color
-                                  "{} {} {}".format(time.strftime("%H:%M"), insideTemperature(), outsideTemperature()) # Data to draw
+                                  "{} {} {} {}".format(time.strftime("%H:%M"), insideTemperature("salon"), insideTemperature("chambre"), outsideTemperature()) # Data to draw
                 )
                 self.offscreen_canvas = self.matrix.SwapOnVSync(self.offscreen_canvas)
                 time.sleep(1)
