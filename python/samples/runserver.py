@@ -29,12 +29,12 @@ class Temps():
 
     @classmethod
     def insideTemperature(cls, room):
-        if time.time() - cls.lastupdate < 60: cls.updateTemps()
+        if time.time() - cls.lastupdate > 60: cls.updateTemps()
         return cls.ins[room]
 
     @classmethod
     def outsideTemperature(cls):
-        if time.time() - cls.lastupdate < 60: cls.updateTemps()
+        if time.time() - cls.lastupdate > 60: cls.updateTemps()
         return cls.out
 
 
