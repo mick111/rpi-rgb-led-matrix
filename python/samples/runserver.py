@@ -12,7 +12,7 @@ import os
 import requests
 import json
 
-class Temps():
+class Weather():
     lastupdate = time.time() - 100
     ins = {"chambre": 0.0, "salon": 0.0}
     out = 0.0
@@ -24,7 +24,10 @@ class Temps():
                   "salon": "28-0416526fcfff"}[room]
             f = open(os.path.join("/sys/bus/w1/devices/", ds, "w1_slave")).read()
             cls.ins[room] = float(f.split('\n')[1].split('=')[1])/1000
-        cls.out = float(requests.get("http://api.openweathermap.org/data/2.5/weather?id=2968815&APPID={}&units=metric".format(open("openweathermap_apikey").read().strip())).json()['main']['temp'])
+        
+        j = requests.get("http://api.openweathermap.org/data/2.5/weather?id=2968815&APPID={}&units=metric".format(open("openweathermap_apikey").read().strip())).json()
+        cls.out = float(j['main']['temp']) #float(requests.get("http://api.openweathermap.org/data/2.5/weather?id=2968815&APPID={}&units=metric".format(open("openweathermap_apikey").read().strip())).json()['main']['temp'])
+        cls.icon = Image.open('./weathericons/' + j['weather'][0]['icon']+'.png').convert("RGB")
         cls.lastupdate = time.time()
 
     @classmethod
@@ -37,6 +40,10 @@ class Temps():
         if time.time() - cls.lastupdate > 60: cls.updateTemps()
         return cls.out
 
+    @classmethod
+    def icon(cls):
+        if time.time() - cls.lastupdate > 60: cls.updateTemps()
+        return cls.icon
 
 class ServerHandler(SocketServer.BaseRequestHandler):
     def setup(self):
@@ -179,7 +186,7 @@ class RunServer(SampleBase):
                 graphics.DrawText(
                                   self.offscreen_canvas, # Canvas destination
                                   self.fontLittle,       # Font to show
-                                  6, 7,                  # Position
+                                  0, 7,                  # Position
                                   graphics.Color(self.textColor[0], self.textColor[1], self.textColor[2]), # graphics.Color(255, 255, 255), # Color
                                   "{}".format(time.strftime("%H:%M" if int(timeBeforeDimming) % 2 == 0 else "%H %M")) # Data to draw
                                   )
@@ -188,9 +195,9 @@ class RunServer(SampleBase):
                   self.fontLittle,       # Font to show
                   0, 15,                  # Position
                   graphics.Color(self.textColor[0], self.textColor[1], self.textColor[2]),#graphics.Color(255, 255, 255), # Color
-                  u"{:2.0f} {:2.0f} {:2.0f}".format(Temps().insideTemperature("salon"), Temps().insideTemperature("chambre"), Temps().outsideTemperature()) # Data to draw
+                  u"{:2.0f} {:2.0f} {:2.0f}".format(Weather().insideTemperature("salon"), Weather().insideTemperature("chambre"), Weather().outsideTemperature()) # Data to draw
                 )
-    
+                self.offscreen_canvas.SetImage(Weather().icon, 20, 0)
                 self.offscreen_canvas = self.matrix.SwapOnVSync(self.offscreen_canvas)
                 time.sleep(1)
                 continue
