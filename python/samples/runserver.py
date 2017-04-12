@@ -27,7 +27,7 @@ class Weather():
         
         j = requests.get("http://api.openweathermap.org/data/2.5/weather?id=2968815&APPID={}&units=metric".format(open("openweathermap_apikey").read().strip())).json()
         cls.out = float(j['main']['temp']) #float(requests.get("http://api.openweathermap.org/data/2.5/weather?id=2968815&APPID={}&units=metric".format(open("openweathermap_apikey").read().strip())).json()['main']['temp'])
-        cls.icon = Image.open('./weathericons/' + j['weather'][0]['icon']+'.png').convert("RGB")
+        cls.ico = Image.open('./weathericons/' + j['weather'][0]['icon']+'.png').convert("RGB")
         cls.lastupdate = time.time()
 
     @classmethod
@@ -43,7 +43,7 @@ class Weather():
     @classmethod
     def icon(cls):
         if time.time() - cls.lastupdate > 60: cls.updateTemps()
-        return cls.icon
+        return cls.ico
 
 class ServerHandler(SocketServer.BaseRequestHandler):
     def setup(self):
