@@ -176,13 +176,16 @@ class RunServer(SampleBase):
                 # Reset the canvas
                 self.offscreen_canvas.Clear()
                 self.matrix.brightness = self.max_brightness / 20
-                graphics.DrawText(
-                                  self.offscreen_canvas, # Canvas destination
-                                  self.fontLittle,       # Font to show
-                                  6, 7,                  # Position
-                                  graphics.Color(self.textColor[0], self.textColor[1], self.textColor[2]), # graphics.Color(255, 255, 255), # Color
-                                  "{}".format(time.strftime("%H:%M" if int(timeBeforeDimming) % 2 == 0 else "%H %M")) # Data to draw
-                                  )
+                co, f, ca = graphics.Color(self.textColor[0], self.textColor[1], self.textColor[2]), self.fontLittle, self.offscreen_canvas
+                hm = time.strftime("%H%M")
+                
+                # Print hours
+                graphics.DrawText(ca, f, 0, 7, co, hm[0:2])
+                # Print columns
+                if int(timeBeforeDimming) % 2: graphics.DrawText(ca, f, 6, 7, co, ":")
+                # Print Minutes
+                graphics.DrawText(ca, f, 9, 7, co, hm[2:4])
+                
                 graphics.DrawText(
                   self.offscreen_canvas, # Canvas destination
                   self.fontLittle,       # Font to show
@@ -238,7 +241,7 @@ class RunServer(SampleBase):
         self.font.LoadFont("../../fonts/9x15.bdf")
 
         self.fontLittle = graphics.Font()
-        self.fontLittle.LoadFont("../../fonts/4x6.bdf")
+        self.fontLittle.LoadFont("../../fonts/5x7.bdf")
         
         self.pos = self.offscreen_canvas.width
 
