@@ -195,7 +195,7 @@ class RunServer(SampleBase):
                 graphics.DrawText(ca, f, 13, 7, co, hm[2:4])
 
                 # Print weather icon
-                self.offscreen_canvas.SetImage(Weather().icon, 23, 0)
+                self.offscreen_canvas.SetImage(Weather().icon(), 23, 0)
     
                 # Print Temperatures
                 graphics.DrawText(ca, f, 0,  15, co, u"{:2.0f}".format(Weather().insideTemperature("salon")))
