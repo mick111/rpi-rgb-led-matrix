@@ -190,17 +190,19 @@ class RunServer(SampleBase):
                 # Print hours
                 graphics.DrawText(ca, f, 0, 7, co, hm[0:2])
                 # Print columns
-                if int(timeBeforeDimming) % 2: graphics.DrawText(ca, f, 6, 7, co, ":")
+                if int(timeBeforeDimming) % 2: graphics.DrawText(ca, f, 8, 7, co, ":")
                 # Print Minutes
-                graphics.DrawText(ca, f, 9, 7, co, hm[2:4])
-                graphics.DrawText(
-                  self.offscreen_canvas, # Canvas destination
-                  self.fontLittle,       # Font to show
-                  0, 15,                  # Position
-                  graphics.Color(self.textColor[0], self.textColor[1], self.textColor[2]),#graphics.Color(255, 255, 255), # Color
-                  u"{:2.0f} {:2.0f} {:2.0f}".format(Weather().insideTemperature("salon"), Weather().insideTemperature("chambre"), Weather().outsideTemperature()) # Data to draw
-                )
-                self.offscreen_canvas.SetImage(Weather().icon, 20, 0)
+                graphics.DrawText(ca, f, 13, 7, co, hm[2:4])
+
+                # Print weather icon
+                self.offscreen_canvas.SetImage(Weather().icon, 23, 0)
+    
+                # Print Temperatures
+                graphics.DrawText(ca, f, 0,  15, co, u"{:2.0f}".format(Weather().insideTemperature("salon")))
+                graphics.DrawText(ca, f, 12,  15, co, u"{:2.0f}".format(Weather().insideTemperature("chambre")))
+                graphics.DrawText(ca, f, 24, 15, co, u"{:2.0f}".format(Weather().outsideTemperature()))
+                
+                
                 self.offscreen_canvas = self.matrix.SwapOnVSync(self.offscreen_canvas)
                 time.sleep(1)
                 continue
