@@ -188,11 +188,11 @@ class RunServer(SampleBase):
                 hm = time.strftime("%H%M")
                 
                 # Print hours
-                graphics.DrawText(ca, f, 5+0, 7, co, hm[0:2])
+                graphics.DrawText(ca, f, 5+0, 6, co, hm[0:2])
                 # Print columns
-                if int(timeBeforeDimming) % 2: graphics.DrawText(ca, f, 5+9, 7, co, ":")
+                if int(timeBeforeDimming) % 2: graphics.DrawText(ca, f, 5+9, 6, co, ":")
                 # Print Minutes
-                graphics.DrawText(ca, f, 5+13, 7, co, hm[2:4])
+                graphics.DrawText(ca, f, 5+13, 6, co, hm[2:4])
 
                 # Print Temperatures
                 graphics.DrawText(ca, f, 0, 15, co, u"{:2.0f}".format((Weather().insideTemperature("chambre") + Weather().insideTemperature("salon"))/2))
@@ -200,7 +200,7 @@ class RunServer(SampleBase):
 
                 # Print weather
                 self.offscreen_canvas.SetImage(Weather().icon(), 23, 7)
-                graphics.DrawText(ca, f, 12, 15, co, u"{:2.0f}".format(Weather().outsideTemperature()))
+                graphics.DrawText(ca, f, 13, 15, co, u"{:2.0f}".format(Weather().outsideTemperature()))
                 
                 
                 self.offscreen_canvas = self.matrix.SwapOnVSync(self.offscreen_canvas)
