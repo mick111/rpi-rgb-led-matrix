@@ -78,7 +78,6 @@ class ServerHandler(SocketServer.BaseRequestHandler):
             # Reset dimming
             if command not in ["GET"]:
                 self.server.server_runner.timeBeforeDimming = time.time() + 300
-
             # Reset the display and log the command in the HISTORY for some commands
             if command not in ["BGCOLOR", "COLOR", "FONT", "GET", "DEDIM"] or (command == "GET" and len(commands) > 1 and commands[1].startswith("/CLEAR")):
                 self.server.server_runner.reset()
@@ -94,7 +93,7 @@ class ServerHandler(SocketServer.BaseRequestHandler):
             elif command == "IMAGES" and len(commands) > 1:
                 # Show images from specific folder
                 self.server.server_runner.images = [Image.open(i).convert("RGB") for i in sorted(glob.glob(commands[1]))]
-                self.server.server_runner.sleeptime = 1
+                self.server.server_runner.sleeptime = 2
                 self.server.server_runner.pos = 0
             elif command == "NYAN" or command == "NYAN32":
                 # Show NyanCat
