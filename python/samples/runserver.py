@@ -90,7 +90,12 @@ class ServerHandler(SocketServer.BaseRequestHandler):
                 # Reset dimming with lower value
                 self.server.server_runner.timeBeforeDimming = time.time() + 30
             elif command == "HOUR":
-                self.server.server_runner.hour = True
+                self.server.server_runner.hour = True#
+            elif command == "IMAGES" and len(commands) > 1:
+                # Show images from specific folder
+                self.server.server_runner.images = [Image.open(i).convert("RGB") for i in sorted(glob.glob(commands[1]))]
+                self.server.server_runner.sleeptime = 1
+                self.server.server_runner.pos = 0
             elif command == "NYAN" or command == "NYAN32":
                 # Show NyanCat
                 self.server.server_runner.background = (3,37,83)
