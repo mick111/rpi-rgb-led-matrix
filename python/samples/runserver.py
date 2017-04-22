@@ -14,20 +14,27 @@ import json
 
 class Weather():
     lastupdate = time.time() - 100
-    ins = {"chambre": 0.0, "salon": 0.0}
-    out = 0.0
-        
+    ins = {"chambre": None, "salon": None}
+    out = None
+    ico = None
+
     @classmethod
     def updateTemps(cls):
-        for room in ["chambre", "salon"]:
-            ds = {"chambre": "28-03164783ecff",
-                  "salon": "28-0416526fcfff"}[room]
-            f = open(os.path.join("/sys/bus/w1/devices/", ds, "w1_slave")).read()
-            cls.ins[room] = float(f.split('\n')[1].split('=')[1])/1000
+        try:
+            cls.ins = {"chambre": None, "salon": None}
+            for room in ["chambre", "salon"]:
+               ds = {"chambre": "28-03164783ecff",
+                     "salon": "28-0416526fcfff"}[room]
+               f = open(os.path.join("/sys/bus/w1/devices/", ds, "w1_slave")).read()
+               cls.ins[room] = float(f.split('\n')[1].split('=')[1])/1000
         
-        j = requests.get("http://api.openweathermap.org/data/2.5/weather?id=2968815&APPID={}&units=metric".format(open("openweathermap_apikey").read().strip())).json()
-        cls.out = float(j['main']['temp']) #float(requests.get("http://api.openweathermap.org/data/2.5/weather?id=2968815&APPID={}&units=metric".format(open("openweathermap_apikey").read().strip())).json()['main']['temp'])
-        cls.ico = Image.open('./weathericons/' + j['weather'][0]['icon']+'.png').convert("RGB")
+            cls.out = None
+            cls.ico = None
+            j = requests.get("http://api.openweathermap.org/data/2.5/weather?id=2968815&APPID={}&units=metric".format(open("openweathermap_apikey").read().strip())).json()
+            cls.out = float(j['main']['temp']) #float(requests.get("http://api.openweathermap.org/data/2.5/weather?id=2968815&APPID={}&units=metric".format(open("openweathermap_apikey").read().strip())).json()['main']['temp'])
+            cls.ico = Image.open('./weathericons/' + j['weather'][0]['icon']+'.png').convert("RGB")
+        except Exception as e:
+            pass
         cls.lastupdate = time.time()
 
     @classmethod
@@ -195,14 +202,20 @@ class RunServer(SampleBase):
                 graphics.DrawText(ca, f, 5+13, 6, co, hm[2:4])
 
                 # Print Temperatures
-                graphics.DrawText(ca, f, 0, 15, co, u"{:2.0f}".format((Weather().insideTemperature("chambre") + Weather().insideTemperature("salon"))/2))
-
+                temp = Weather().insideTemperature("chambre")
+                temp2 = Weather().insideTemperature("salon") 
+                temp3 = (temp if temp is not None else 0.0) + (temp2 if temp2 is not None else 0.0)
+                temp = None if temp is None and temp2 is None else temp3 if temp is None or temp2 is None else (temp3/2)
+                if temp is not None: graphics.DrawText(ca, f, 0, 15, co, u"{:2.0f}".format(temp))
 
                 # Print weather
-                self.offscreen_canvas.SetImage(Weather().icon(), 23, 7)
-                graphics.DrawText(ca, f, 13, 15, co, u"{:2.0f}".format(Weather().outsideTemperature()))
-                
-                
+                ico = Weather().icon()
+                if ico is not None:
+                   self.offscreen_canvas.SetImage(ico, 23, 7)
+                outTemp = Weather().outsideTemperature()
+                if outTemp is not None:
+                   graphics.DrawText(ca, f, 13, 15, co, u"{:2.0f}".format(outTemp))
+      
                 self.offscreen_canvas = self.matrix.SwapOnVSync(self.offscreen_canvas)
                 time.sleep(1)
                 continue
