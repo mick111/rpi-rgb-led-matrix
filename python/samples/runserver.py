@@ -85,7 +85,6 @@ class ServerHandler(SocketServer.BaseRequestHandler):
             # Reset dimming
             if command not in ["GET"]:
                 self.server.server_runner.timeBeforeDimming = time.time() + 300
-
             # Reset the display and log the command in the HISTORY for some commands
             if command not in ["BGCOLOR", "COLOR", "FONT", "GET", "DEDIM"] or (command == "GET" and len(commands) > 1 and commands[1].startswith("/CLEAR")):
                 self.server.server_runner.reset()
@@ -97,7 +96,12 @@ class ServerHandler(SocketServer.BaseRequestHandler):
                 # Reset dimming with lower value
                 self.server.server_runner.timeBeforeDimming = time.time() + 30
             elif command == "HOUR":
-                self.server.server_runner.hour = True
+                self.server.server_runner.hour = True#
+            elif command == "IMAGES" and len(commands) > 1:
+                # Show images from specific folder
+                self.server.server_runner.images = [Image.open(i).convert("RGB") for i in sorted(glob.glob(commands[1]))]
+                self.server.server_runner.sleeptime = 2
+                self.server.server_runner.pos = 0
             elif command == "NYAN" or command == "NYAN32":
                 # Show NyanCat
                 self.server.server_runner.background = (3,37,83)
@@ -105,16 +109,20 @@ class ServerHandler(SocketServer.BaseRequestHandler):
                 self.server.server_runner.pos = -64 if command == "NYAN" else -32
                 self.server.server_runner.sleeptime = 0.07
             elif command == "GET" and len(commands) > 1 and commands[1].startswith("/HISTORY"):
+                # Get History of commands and serves a web page
                 history = self.server.server_runner.getHistory()
                 self.request.sendall("""HTTP/1.1 200 OK\r\nDate: Sun, 19 Mar 2017 21:13:55 GMT\r\nServer: Apache/2.4.23 (Unix)\r\nVary: negotiate\r\nTCN: choice\r\nLast-Modified: Mon, 11 Jun 2007 18:53:14 GMT\r\nETag: "2d-432a5e4a73a80"\r\nContent-Type: text/html\r\n\r\n<html><body>{}</body></html>\r\n""".format("<br/>".join(history)))
                 return
             elif command == "GET":
+                # Serves a dummy web page
                 self.request.sendall("""HTTP/1.1 200 OK\r\nDate: Sun, 19 Mar 2017 21:13:55 GMT\r\nServer: Apache/2.4.23 (Unix)\r\nVary: negotiate\r\nTCN: choice\r\nLast-Modified: Mon, 11 Jun 2007 18:53:14 GMT\r\nETag: "2d-432a5e4a73a80"\r\nContent-Type: text/html\r\n\r\n<html><body><h1>This is not a website...</h1><h6>Perdu!</h6></body></html>\r\n""")
                 return
             elif command == "TEXT" and len(commands) > 1:
+                # Sets the text to show
                 self.server.server_runner.text = commands[1].decode('utf-8').strip()
                 self.server.server_runner.pos = self.server.server_runner.offscreen_canvas.width
             elif (command == "COLOR" or command == "BGCOLOR") and len(commands) > 1:
+                # Sets the text color or the background color
                 color = commands[1].replace('\x00', '').strip().lower()
                 gColor = None
                 if   color == 'red':     gColor = (255, 0, 0)
@@ -142,14 +150,18 @@ class ServerHandler(SocketServer.BaseRequestHandler):
                     if fontname in i.lower():
                         self.server.server_runner.font.LoadFont(i)
                         break
+        # Client has disconnected
         print "Goodbye {}".format(self.client_address[0])
 
+# To make a Threaded TCP Server
 class ThreadedTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
     pass
 
+# Main RGBMatrix Sample Class
 class RunServer(SampleBase):
     def __init__(self, *args, **kwargs):
         super(RunServer, self).__init__(*args, **kwargs)
+        # Adds more arguments
         self.parser.add_argument("--history", type=argparse.FileType('a+'), help="History of messages received by clients..")
         self.parser.add_argument("-l", "--listening-port", type=int, help="The port on which commands are received.", default=23735)
 
@@ -170,68 +182,80 @@ class RunServer(SampleBase):
         self.hour = None
         self.pos = 0
         self.sleeptime = 0.05
+        self.timeBeforeDimming = 0.0
     
+    def drawIdlePanel(self):
+        # Idle Panel:
+        co, f, f2, ca = graphics.Color(self.textColor[0], self.textColor[1], self.textColor[2]), self.fontLittle, self.fontLittle2, self.offscreen_canvas
+        hm = time.strftime("%H%M%S")
+                
+        # Print hours
+        graphics.DrawText(ca, f, 5+0, 6, co, hm[0:2])
+        # Print columns
+        if int(hm[-1]) % 2: graphics.DrawText(ca, f2, 5+9, 6, co, ":")
+        # Print Minutes
+        graphics.DrawText(ca, f, 5+12, 6, co, hm[2:4])
+        
+        # Print Temperatures
+        temp = Weather().insideTemperature("chambre")
+        temp2 = Weather().insideTemperature("salon")
+        temp3 = (temp if temp is not None else 0.0) + (temp2 if temp2 is not None else 0.0)
+        temp = None if temp is None and temp2 is None else temp3 if temp is None or temp2 is None else (temp3/2)
+        if temp is not None: graphics.DrawText(ca, f, 0, 15, co, u"{:2.0f}".format(temp))
+        
+        # Print weather icon (origin is TopLeft, coordinates are flipped)
+        ico = Weather().icon()
+        if ico is not None:
+            self.offscreen_canvas.SetImage(ico, 23, 7)
+        outTemp = Weather().outsideTemperature()
+        if outTemp is not None:
+            graphics.DrawText(ca, f, 13, 15, co, u"{:2.0f}".format(outTemp))
+
+    # Run loop of the server
     def show(self):
         # Run forever
         while True:
             # Wait for a certain time
             time.sleep(self.sleeptime)
-        
-            # Reset dimming to 15 sec each 15 minutes when displaying time
-            if self.hour and (time.localtime().tm_min % 15) == 0 and time.localtime().tm_sec < 10:
-                self.timeBeforeDimming = max(time.time() + 15, self.timeBeforeDimming)
             
-            # Dimm brightness after a certain amount of time
             timeBeforeDimming = self.timeBeforeDimming - time.time()
-            self.matrix.brightness = 0 if timeBeforeDimming < 0 else self.max_brightness if timeBeforeDimming > 15 else (self.max_brightness * timeBeforeDimming) / 15
-            
-            # Check if there is something to show
+
+            # Check if we are Idle
             if timeBeforeDimming < 0 or (self.hour is None and self.text is None and self.images is None):
                 # Reset the canvas
                 self.offscreen_canvas.Clear()
+                # Reduces the brightness
                 self.matrix.brightness = self.max_brightness / 20
 
-                co, f, ca = graphics.Color(self.textColor[0], self.textColor[1], self.textColor[2]), self.fontLittle, self.offscreen_canvas
-                hm = time.strftime("%H%M")
-                
-                # Print hours
-                graphics.DrawText(ca, f, 5+0, 6, co, hm[0:2])
-                # Print columns
-                if int(timeBeforeDimming) % 2: graphics.DrawText(ca, f, 5+9, 6, co, ":")
-                # Print Minutes
-                graphics.DrawText(ca, f, 5+13, 6, co, hm[2:4])
-
-                # Print Temperatures
-                temp = Weather().insideTemperature("chambre")
-                temp2 = Weather().insideTemperature("salon") 
-                temp3 = (temp if temp is not None else 0.0) + (temp2 if temp2 is not None else 0.0)
-                temp = None if temp is None and temp2 is None else temp3 if temp is None or temp2 is None else (temp3/2)
-                if temp is not None: graphics.DrawText(ca, f, 0, 15, co, u"{:2.0f}".format(temp))
-
-                # Print weather
-                ico = Weather().icon()
-                if ico is not None:
-                   self.offscreen_canvas.SetImage(ico, 23, 7)
-                outTemp = Weather().outsideTemperature()
-                if outTemp is not None:
-                   graphics.DrawText(ca, f, 13, 15, co, u"{:2.0f}".format(outTemp))
-      
+                # Draw informations of idle panel
+                self.drawIdlePanel()
+                # Show canvas
                 self.offscreen_canvas = self.matrix.SwapOnVSync(self.offscreen_canvas)
-                time.sleep(1)
+                time.sleep(1) # No need to urge, we are idle
                 continue
         
             # First, fill the background
             self.offscreen_canvas.Fill(self.background[0], self.background[1], self.background[2])
             
+            # Reset dimming to 15 sec each 15 minutes when displaying time
+            if self.hour and (time.localtime().tm_min % 15) == 0 and time.localtime().tm_sec < 10:
+                self.timeBeforeDimming = max(time.time() + 15, self.timeBeforeDimming)
+            
+            # Dimm brightness after a certain amount of time
+            self.matrix.brightness = 0 if timeBeforeDimming < 0 else self.max_brightness if timeBeforeDimming > 15 else (self.max_brightness * timeBeforeDimming) / 15
+            
             # In order of priority: Hour -> Text -> Image
             if self.text is not None or self.hour is not None:
                 try:
+                    # Draw text
                     color = graphics.Color(self.textColor[0], self.textColor[1], self.textColor[2])
+                    textToDraw = self.text if self.hour is None else time.strftime("%H:%M:%S")
                     leng = graphics.DrawText(self.offscreen_canvas, # Canvas destination
                                              self.font,             # Font to show
                                              self.pos, 12,          # Position
-                                             color, # Color
-                                             self.text if self.hour is None else time.strftime("%H:%M:%S")) # Data to draw
+                                             color,                 # Color
+                                             textToDraw) # Data to draw
+                                             
                     # Next position is shifted by one on the left
                     self.pos -= 1
                     if (self.pos + leng < 0):
@@ -241,13 +265,20 @@ class RunServer(SampleBase):
                     print "Cannot draw text", str(e)
 
             elif self.images is not None:
+                # Get the current image
                 im = self.images[self.pos % len(self.images)]
                 width, height = im.size
-                self.offscreen_canvas.SetImage(im, min(self.pos-width, self.offscreen_canvas.width-width), 0)
+                
+                # Origin is TopLeft, coordinates are flipped
+                posX = min(self.pos-width, self.offscreen_canvas.width-width)
+                self.offscreen_canvas.SetImage(im, posX, 0)
+                
+                # Next position is shifted by one on the right
                 self.pos += 1
                 if self.pos > 1000:
                     self.images = None
 
+            # Show prepared Canvas
             self.offscreen_canvas = self.matrix.SwapOnVSync(self.offscreen_canvas)
 
 
@@ -264,6 +295,8 @@ class RunServer(SampleBase):
 
         self.fontLittle = graphics.Font()
         self.fontLittle.LoadFont("../../fonts/5x7.bdf")
+        self.fontLittle2 = graphics.Font()
+        self.fontLittle2.LoadFont("../../fonts/4x6.bdf")
         
         self.pos = self.offscreen_canvas.width
 
