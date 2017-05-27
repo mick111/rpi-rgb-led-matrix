@@ -11,6 +11,7 @@ import argparse
 import os
 import requests
 import json
+import colorsys
 
 class Weather():
     lastupdate = time.time() - 100
@@ -140,6 +141,7 @@ class ServerHandler(SocketServer.BaseRequestHandler):
                         gColor = None
                 if command == "COLOR" and gColor is not None:
                     self.server.server_runner.textColor = gColor
+                    self.server.server_runner.updateToConfigFile()
                 elif command == "BGCOLOR" and gColor is not None:
                     self.server.server_runner.background = gColor
             elif command == "FONT" and len(commands) > 1:
@@ -165,6 +167,34 @@ class RunServer(SampleBase):
         self.parser.add_argument("--history", type=argparse.FileType('a+'), help="History of messages received by clients..")
         self.parser.add_argument("-l", "--listening-port", type=int, help="The port on which commands are received.", default=23735)
 
+    # Update from configuration file
+    def updateFromConfigFile(self):
+        try:
+            fileinfo = json.load(open(self.fileinformation))
+            self.powerState = fileinfo["powerState"]
+            self.max_brightness = int(255.0*fileinfo["brightness"])/100 
+            rgb = colorsys.hls_to_rgb(
+                float(fileinfo["hue"])/360,
+                0.5,
+                float(fileinfo["saturation"])/100)
+            # print fileinfo, rgb
+            self.textColor = (int(rgb[0]*255.0), int(rgb[1]*255.0), int(rgb[2]*255.0))
+        except:
+            pass
+
+    def updateToConfigFile(self):
+        try:
+            fileinfo = {}
+            fileinfo["powerState"] = self.powerState
+            fileinfo["brightness"] = self.max_brightness
+            rgb = (float(self.textColor[0]) / 255.0, float(self.textColor[1]) / 255.0, float(self.textColor[2]) / 255.0)
+            hls = colorsys.rgb_to_hls(rgb)
+            fileinfo["hue"] = int(hls[0]*360)
+            fileinfo["saturation"] = int(hls[2]*100)
+            
+        except:
+            pass
+
     # Add a text line in history
     def addToHistory(self, data):
         self.history.write(time.strftime("%b %d %Y %H:%M:%S") + ": " + data + "\n")
@@ -183,7 +213,8 @@ class RunServer(SampleBase):
         self.pos = 0
         self.sleeptime = 0.05
         self.timeBeforeDimming = 0.0
-    
+        self.updateFromConfigFile()
+
     def drawIdlePanel(self):
         # Idle Panel:
         co, f, f2, ca = graphics.Color(self.textColor[0], self.textColor[1], self.textColor[2]), self.fontLittle, self.fontLittle2, self.offscreen_canvas
@@ -220,10 +251,22 @@ class RunServer(SampleBase):
             
             timeBeforeDimming = self.timeBeforeDimming - time.time()
 
+            self.updateFromConfigFile()
+
+            if not self.powerState:
+                self.offscreen_canvas.Clear()
+                self.offscreen_canvas = self.matrix.SwapOnVSync(self.offscreen_canvas)
+                time.sleep(1)
+                continue
+
+            # First, fill the background
+            self.offscreen_canvas.Fill(self.background[0], self.background[1], self.background[2])
+            
             # Check if we are Idle
             if timeBeforeDimming < 0 or (self.hour is None and self.text is None and self.images is None):
+
                 # Reset the canvas
-                self.offscreen_canvas.Clear()
+                self.offscreen_canvas.Fill(self.background[0], self.background[1], self.background[2]) # self.offscreen_canvas.Clear()
                 # Reduces the brightness
                 self.matrix.brightness = self.max_brightness / 20
 
@@ -234,9 +277,6 @@ class RunServer(SampleBase):
                 time.sleep(1) # No need to urge, we are idle
                 continue
         
-            # First, fill the background
-            self.offscreen_canvas.Fill(self.background[0], self.background[1], self.background[2])
-            
             # Reset dimming to 15 sec each 15 minutes when displaying time
             if self.hour and (time.localtime().tm_min % 15) == 0 and time.localtime().tm_sec < 10:
                 self.timeBeforeDimming = max(time.time() + 15, self.timeBeforeDimming)
@@ -283,9 +323,11 @@ class RunServer(SampleBase):
 
 
     def run(self):
+        self.fileinformation = "/home/pi/.homebridge/accessoriesConfig/MatricePorte.json"
         self.reset()
         
         self.background = (0, 0, 0)
+        self.updateFromConfigFile()
         self.textColor = (255, 255, 255)
         
         self.offscreen_canvas = self.matrix.CreateFrameCanvas()
