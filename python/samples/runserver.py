@@ -78,14 +78,14 @@ class ServerHandler(SocketServer.BaseRequestHandler):
             # Go on next command
             if data == '': continue
 
-            print repr(data)
+            #print repr(data)
 
             commands = data.strip().split(" ", 1)
             command = commands[0].strip().upper()
             
             # Reset dimming
-            if command not in ["GET"]:
-                self.server.server_runner.timeBeforeDimming = time.time() + 300
+            #if command not in ["GET"]:
+            self.server.server_runner.timeBeforeDimming = time.time() + 300
             # Reset the display and log the command in the HISTORY for some commands
             if command not in ["BGCOLOR", "COLOR", "FONT", "GET", "DEDIM"] or (command == "GET" and len(commands) > 1 and commands[1].startswith("/CLEAR")):
                 self.server.server_runner.reset()
@@ -274,7 +274,7 @@ class RunServer(SampleBase):
                 self.drawIdlePanel()
                 # Show canvas
                 self.offscreen_canvas = self.matrix.SwapOnVSync(self.offscreen_canvas)
-                time.sleep(1) # No need to urge, we are idle
+                time.sleep(0.3) # No need to urge, we are idle
                 continue
         
             # Reset dimming to 15 sec each 15 minutes when displaying time
