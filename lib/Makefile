@@ -5,7 +5,7 @@
 ##
 OBJECTS=gpio.o led-matrix.o options-initialize.o framebuffer.o \
         thread.o bdf-font.o graphics.o transformer.o led-matrix-c.o \
-	hardware-mapping.o
+	hardware-mapping.o content-streamer.o
 TARGET=librgbmatrix
 
 # There are several different pinouts for various breakout boards that uses
@@ -40,12 +40,6 @@ DEFINES+=-DDEFAULT_ROTATION=180
 # has uses inverse logic for the RGB bits. In that case: uncomment this.
 # Flag: --led-inverse
 #DEFINES+=-DINVERSE_RGB_DISPLAY_COLORS
-
-# Some panels out there seem to have Green and Blue swapped (even though the
-# writing on connector looks correct). This option will swap these colors if
-# you happen to have gotten such panel.
-# Flag: --led-swap-green-blue
-#DEFINES+=-DRGB_SWAP_GREEN_BLUE
 
 # For curiosity reasons and while tweaking values for LSB_PWM_NANOSECONDS,
 # uncomment to see refresh rate in terminal.
@@ -124,6 +118,10 @@ DEFINES+=-DDEFAULT_ROTATION=180
 # This option is typically _not_ needed, only use when you attempt to connect
 # some oddball old (typically one-colored) display, such as Hub12.
 #DEFINES+=-DONLY_SINGLE_SUB_PANEL
+
+# Experimental: Disable realtime throttling of the Linux kernel. Uncomment
+# if you see periodic flickering in particular with longer display chains.
+#DEFINES+=-DDISABLE_RT_THROTTLE
 
 # If someone gives additional values on the make commandline e.g.
 # make USER_DEFINES="-DSHOW_REFRESH_RATE"

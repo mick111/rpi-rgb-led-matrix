@@ -52,7 +52,7 @@ The 26 pin models can drive one chain of RGB panels, the 40 pin models
 
 The Raspberry Pi 2 and 3 are faster than older models (and the Pi Zero) and
 sometimes the cabeling can't keep up with the speed; check out
-this [troubleshooting section](#help-some-pixels-are-not-displayed-properly)
+this [troubleshooting section](#troubleshooting)
 what to do.
 
 The [Raspbian Lite][raspbian-lite] distribution is recommended.
@@ -93,14 +93,14 @@ make -C examples-api-use
 sudo examples-api-use/demo -D0
 ```
   * Use the utilities. The [utils](./utils) directory has some ready-made
-    useful utilities to show image or text. [Go there](./utils) to see how to
+    useful utilities to show content. [Go there](./utils) to see how to
     compile and run these.
 
 ### Utilities
 
-The [utils directory](./utils) is meant for ready utilities to show images,
-animated gifs, text and video. Read the [README](./utils/README.md) there
-for instructions how to compile.
+The [utils directory](./utils) is meant for ready utilities to show images or
+animated gifs or videos. Read the [README](./utils/README.md) there for
+instructions how to compile.
 
 There are external projects that use this library and provide higher level
 network protocols, such as the
@@ -286,12 +286,12 @@ You might want this if started from an init script at boot-time.
 
 ```
 --led-inverse             : Switch if your matrix has inverse colors on.
---led-swap-green-blue     : Switch if your matrix has green/blue swapped on.
+--led-rgb-sequence        : Switch if your matrix has led colors swapped (Default: "RGB")
 ```
 
 These are if you have a different kind of LED panel in which the logic of the
-color bits is reversed (`--led-inverse`) or where the green and blue colors
-are swapped (`--led-swap-green-blue`). You know it when you see it.
+color bits is reversed (`--led-inverse`) or where the Red, Green and Blue LEDs
+are mixed up (`--led-rgb-sequence`). You know it when you see it.
 
 Troubleshooting
 ---------------
@@ -305,10 +305,24 @@ In general, run a minimal configuration on your Pi.
     Using a Pi with a GUI is a frustratingly slow use of an otherwise
     perfectly good embedded device.)
 
-  * Switch off on-board sound (external USB sound adapters work).
+  * Switch off on-board sound (`dtparam=audio=off` in `/boot/config.txt`).
+    External USB sound adapters work, and are much better quality anyway,
+    so that is recommended if you happen to need sound. The on-board sound
+    uses a timing circuit that the RGB-Matrix needs (it seems in some
+    distributions, such as arch-linux, this is not enough and you need
+    to explicitly blacklist the snd_bcm2835 module).
 
-Everything seems to work well with a **[Raspbian Lite][raspbian-lite]**
-distribution.
+  * Don't run anything that messes in parallel with the GPIO pins, e.g.
+    PiGPIO library/daemon.
+
+  * I have also seen reports that on some Pis, the one-wire protocol is
+    enabled (w1-gpio). This will also not work (disable by removing
+    `dtoverlay=w1-gpio` in `/boot/config.txt`; or using `raspi-config`,
+    Interface Options -> 1-Wire)
+
+The default install of **[Raspbian Lite][raspbian-lite]** seems to be a good
+starting point, as it has a reasonable minimal configuration to begin with.
+So I strongly recommend using that.
 
 ### Bad interaction with Sound
 If sound is enabled on your Pi, this will not work together with the LED matrix,

@@ -1,5 +1,6 @@
 // -*- mode: c++; c-basic-offset: 2; indent-tabs-mode: nil; -*-
-// Small example how write text.
+// Example of a clock. This is very similar to the text-example,
+// except that it shows the time :)
 //
 // This code is public domain
 // (but note, that the led-matrix library this depends on is GPL v2)
@@ -8,12 +9,19 @@
 #include "graphics.h"
 
 #include <getopt.h>
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include <unistd.h>
 
 using namespace rgb_matrix;
+
+volatile bool interrupt_received = false;
+static void InterruptHandler(int signo) {
+  interrupt_received = true;
+}
 
 static int usage(const char *progname) {
   fprintf(stderr, "usage: %s [options]\n", progname);
@@ -22,6 +30,7 @@ static int usage(const char *progname) {
   fprintf(stderr, "Options:\n");
   rgb_matrix::PrintMatrixFlags(stderr);
   fprintf(stderr,
+          "\t-d <time-format>  : Default '%%H:%%M'. See strftime()\n"
           "\t-f <font-file>    : Use given font.\n"
           "\t-b <brightness>   : Sets brightness percent. Default: 100.\n"
           "\t-x <x-origin>     : X-Origin of displaying text (Default: 0)\n"
@@ -31,6 +40,7 @@ static int usage(const char *progname) {
           "\t-B <r,g,b>        : Background-Color. Default 0,0,0\n"
           "\t-O <r,g,b>        : Outline-Color, e.g. to increase contrast.\n"
           );
+
   return 1;
 }
 
@@ -52,6 +62,7 @@ int main(int argc, char *argv[]) {
     return usage(argv[0]);
   }
 
+  const char *time_format = "%H:%M";
   Color color(255, 255, 0);
   Color bg_color(0, 0, 0);
   Color outline_color(0,0,0);
@@ -64,8 +75,9 @@ int main(int argc, char *argv[]) {
   int letter_spacing = 0;
 
   int opt;
-  while ((opt = getopt(argc, argv, "x:y:f:C:B:O:b:S:")) != -1) {
+  while ((opt = getopt(argc, argv, "x:y:f:C:B:O:b:S:d:")) != -1) {
     switch (opt) {
+    case 'd': time_format = strdup(optarg); break;
     case 'b': brightness = atoi(optarg); break;
     case 'x': x_orig = atoi(optarg); break;
     case 'y': y_orig = atoi(optarg); break;
@@ -108,11 +120,6 @@ int main(int argc, char *argv[]) {
     fprintf(stderr, "Couldn't load font '%s'\n", bdf_font_file);
     return 1;
   }
-
-  /*
-   * If we want an outline around the font, we create a new font with
-   * the original font as a template that is just an outline font.
-   */
   rgb_matrix::Font *outline_font = NULL;
   if (with_outline) {
       outline_font = font.CreateOutlineFont();
@@ -123,59 +130,61 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-  RGBMatrix *canvas = rgb_matrix::CreateMatrixFromOptions(matrix_options,
+  RGBMatrix *matrix = rgb_matrix::CreateMatrixFromOptions(matrix_options,
                                                           runtime_opt);
-  if (canvas == NULL)
+  if (matrix == NULL)
     return 1;
 
-  canvas->SetBrightness(brightness);
+  matrix->SetBrightness(brightness);
 
   const bool all_extreme_colors = (brightness == 100)
       && FullSaturation(color)
       && FullSaturation(bg_color)
       && FullSaturation(outline_color);
   if (all_extreme_colors)
-    canvas->SetPWMBits(1);
+      matrix->SetPWMBits(1);
 
   const int x = x_orig;
   int y = y_orig;
 
-  if (isatty(STDIN_FILENO)) {
-    // Only give a message if we are interactive. If connected via pipe, be quiet
-    printf("Enter lines. Full screen or empty line clears screen.\n"
-           "Supports UTF-8. CTRL-D for exit.\n");
-  }
+  FrameCanvas *offscreen = matrix->CreateFrameCanvas();
 
-  char line[1024];
-  while (fgets(line, sizeof(line), stdin)) {
-    const size_t last = strlen(line);
-    if (last > 0) line[last - 1] = '\0';  // remove newline.
-    bool line_empty = strlen(line) == 0;
-    if ((y + font.height() > canvas->height()) || line_empty) {
-      canvas->Clear();
-      y = y_orig;
-    }
-    if (line_empty)
-      continue;
-    if (outline_font) {
-      // The outline font, we need to write with a negative (-2) text-spacing,
-      // as we want to have the same letter pitch as the regular text that
-      // we then write on top.
-      rgb_matrix::DrawText(canvas, *outline_font,
-                           x - 1, y + font.baseline(),
-                           outline_color, &bg_color, line, letter_spacing - 2);
-    }
-    // The regular text. Unless we already have filled the background with
-    // the outline font, we also fill the background here.
-    rgb_matrix::DrawText(canvas, font, x, y + font.baseline(),
-                         color, outline_font ? NULL : &bg_color, line,
-                         letter_spacing);
-    y += font.height();
+  char text_buffer[256];
+  struct timespec next_time;
+  next_time.tv_sec = time(NULL);
+  next_time.tv_nsec = 0;
+  struct tm tm;
+
+  signal(SIGTERM, InterruptHandler);
+  signal(SIGINT, InterruptHandler);
+
+  while (!interrupt_received) {
+      localtime_r(&next_time.tv_sec, &tm);
+      strftime(text_buffer, sizeof(text_buffer), time_format, &tm);
+      offscreen->Fill(bg_color.r, bg_color.g, bg_color.b);
+      if (outline_font) {
+          rgb_matrix::DrawText(offscreen, *outline_font,
+                               x - 1, y + font.baseline(),
+                               outline_color, NULL, text_buffer,
+                               letter_spacing - 2);
+      }
+      rgb_matrix::DrawText(offscreen, font, x, y + font.baseline(),
+                           color, NULL, text_buffer,
+                           letter_spacing);
+
+      // Wait until we're ready to show it.
+      clock_nanosleep(CLOCK_REALTIME, TIMER_ABSTIME, &next_time, NULL);
+
+      // Atomic swap with double buffer
+      offscreen = matrix->SwapOnVSync(offscreen);
+
+      next_time.tv_sec += 1;
   }
 
   // Finished. Shut down the RGB matrix.
-  canvas->Clear();
-  delete canvas;
+  matrix->Clear();
+  delete matrix;
 
+  write(STDOUT_FILENO, "\n", 1);  // Create a fresh new line after ^C on screen
   return 0;
 }

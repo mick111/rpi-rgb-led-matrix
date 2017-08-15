@@ -26,7 +26,7 @@ Options:
         --led-scan-mode=<0..1>    : 0 = progressive; 1 = interlaced (Default: 0).
         --led-show-refresh        : Show refresh rate.
         --led-inverse             : Switch if your matrix has inverse colors on.
-        --led-swap-green-blue     : Switch if your matrix has green/blue swapped on.
+        --led-rgb-sequence        : Switch if your matrix has led colors swapped (Default: "RGB")
         --led-pwm-lsb-nanoseconds : PWM Nanoseconds for LSB (Default: 130)
         --led-no-hardware-pulse   : Don't use hardware pin-pulse generation.
         --led-slowdown-gpio=<0..2>: Slowdown GPIO. Needed for faster Pis and/or slower panels (Default: 1).
@@ -131,6 +131,18 @@ hello
 ```
 
 <img src="../img/text-no-ghosting.jpg" height="100px">
+
+How about a clock ?
+
+```
+sudo ./clock -f ../fonts/7x13.bdf --led-chain=2 -d "%H:%M:%S"
+```
+<img src="../img/time-display.jpg" height="100px">
+
+Fonts are in a human readable and editbable `*.bdf` format. There are some
+public domain fonts available in the [`../fonts/`](../fonts) directory. Any
+other fonts you might want to use or scale to the size you need can be
+converted to a BDF format (either with a font editor or the [otf2bdf] tool).
 
 Integrating in your own application
 -----------------------------------
@@ -270,8 +282,8 @@ the defaults you used to create the Matrix:
   matrix->ApplyStaticTransformer(UArrangementTransformer(my_defaults.parallel));
 ```
 
-[time]: ../img/time-display.jpg
 [run-vid]: ../img/running-vid.jpg
 [git-submodules]: http://git-scm.com/book/en/Git-Tools-Submodules
 [pixelpush]: https://github.com/hzeller/rpi-matrix-pixelpusher
 [pp-vid]: ../img/pixelpusher-vid.jpg
+[otf2bdf]: https://www.math.nmsu.edu/~mleisher/Software/otf2bdf/
