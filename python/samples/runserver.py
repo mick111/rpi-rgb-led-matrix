@@ -170,7 +170,7 @@ class RunServer(SampleBase):
     def __init__(self, *args, **kwargs):
         super(RunServer, self).__init__(*args, **kwargs)
         # Adds more arguments
-        self.parser.add_argument("--conffile", help="Json file where parameters are read and saved.")
+        self.parser.add_argument("--conffile", help="Json file where parameters are read and saved.", default="/etc/ledbanner.json")
         self.parser.add_argument("--history", type=argparse.FileType('a+'), help="History of messages received by clients..")
         self.parser.add_argument("-l", "--listening-port", type=int, help="The port on which commands are received.", default=23735)
 
@@ -178,19 +178,28 @@ class RunServer(SampleBase):
     def updateFromConfigFile(self):
         try:
             fileinfo = json.load(open(self.fileinformation))
-            self.powerState = fileinfo["powerState"]
-            self.max_brightness = min(float(fileinfo["brightness"])/100.0, 1.0)
-            rgb = colorsys.hls_to_rgb(float(fileinfo["hue"])/360.0,
-                                      0.5,
-                                      float(fileinfo["saturation"])/100.0)
-            self.textColorRGB = (int(rgb[0]*255.0), int(rgb[1]*255.0), int(rgb[2]*255.0))
-
-            rgb = colorsys.hls_to_rgb(float(fileinfo["hue_bg"])/360.0,
-                                      float(fileinfo["light_bg"])/100.0,
-                                      float(fileinfo["saturation_bg"])/100.0)
-            self.backgroundColorRGB = (int(rgb[0]*255.0), int(rgb[1]*255.0), int(rgb[2]*255.0))
         except:
-            pass
+            fileinfo = {"hue": 0.0, "saturation": 100.0, "powerState": 1, "brightness": 100.0, "saturation_bg": 100.0, "light_bg": 0.0, "hue_bg": 0.0}
+
+        powerState = fileinfo.get("powerState", 1)
+        brightness = fileinfo.get("brightness", 100.0)
+        hue = fileinfo.get("hue", 0.0)
+        saturation = fileinfo.get("saturation", 100.0)
+        saturation_bg = fileinfo.get("saturation_bg", 100.0)
+        light_bg = fileinfo.get("light_bg", 0.0)
+        hue_bg = fileinfo.get("hue_bg", 0.0)
+
+        self.powerState = powerState
+        self.max_brightness = min(brightness/100.0, 1.0)
+        rgb = colorsys.hls_to_rgb(hue/360.0,
+                                  0.5,
+                                  saturation/100.0)
+        self.textColorRGB = (int(rgb[0]*255.0), int(rgb[1]*255.0), int(rgb[2]*255.0))
+
+        rgb = colorsys.hls_to_rgb(hue_bg/360.0,
+                                  light_bg/100.0,
+                                  saturation_bg/100.0)
+        self.backgroundColorRGB = (int(rgb[0]*255.0), int(rgb[1]*255.0), int(rgb[2]*255.0))
 
     def updateToConfigFile(self):
         try:
