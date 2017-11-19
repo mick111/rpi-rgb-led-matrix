@@ -83,33 +83,37 @@ class ServerHandler(SocketServer.BaseRequestHandler):
             command = commands[0].strip().upper()
             
             # Reset dimming date, 300 seconds later
-            self.server.server_runner.timeBeforeDimming = time.time() + 300
+            self.server.server_runner.timeBeforeIdle = time.time() + 300
 
             # Reset the display (remove all content) and log the command in the HISTORY for some commands
             if command not in ["BGCOLOR", "COLOR", "FONT", "GET", "DEDIM"] or (command == "GET" and len(commands) > 1 and commands[1].startswith("/CLEAR")):
                 self.server.server_runner.reset()
                 self.server.server_runner.addToHistory("[" + self.client_address[0] + "] " + data)
 
-            # Command parser
+            # Command dispatch
             if command == "CLEAR":
                 # Nothing to do, we already reset the display
                 pass
             elif command == "DEDIM":
                 # Reset dimming with lower value that usual value for dimming
-                self.server.server_runner.timeBeforeDimming = time.time() + 30
+                self.server.server_runner.timeBeforeIdle = time.time() + 30
             elif command == "HOUR":
                 self.server.server_runner.hour = True
+                self.server.server_runner.timeBeforeIdle = time.time() + 30
             elif command == "IMAGES" and len(commands) > 1:
                 # Show images from specific folder
+                self.server.server_runner.backgroundColorRGB = (0,0,0)
                 self.server.server_runner.images = [Image.open(i).convert("RGB") for i in sorted(glob.glob(commands[1]))]
-                self.server.server_runner.sleeptime = 2
                 self.server.server_runner.pos = 0
+                self.server.server_runner.sleeptime = 2
+                self.server.server_runner.timeBeforeIdle = time.time() + 4*len(self.server.server_runner.images)
             elif command == "NYAN" or command == "NYAN32":
                 # Show NyanCat
-                self.server.server_runner.background = (3,37,83)
+                self.server.server_runner.backgroundColorRGB = (3,37,83)
                 self.server.server_runner.images = [Image.open(i).convert("RGB") for i in sorted(glob.glob('Nyan1664/*.gif'))]
                 self.server.server_runner.pos = -64 if command == "NYAN" else -32
                 self.server.server_runner.sleeptime = 0.07
+                self.server.server_runner.timeBeforeIdle = time.time() + 30
             elif command == "GET" and len(commands) > 1 and commands[1].startswith("/HISTORY"):
                 # Get History of commands and serves a web page
                 history = self.server.server_runner.getHistory()
@@ -141,10 +145,11 @@ class ServerHandler(SocketServer.BaseRequestHandler):
                     except Exception as e:
                         gColor = None
                 if command == "COLOR" and gColor is not None:
-                    self.server.server_runner.textColor = gColor
+                    self.server.server_runner.textColorRGB = gColor
                     self.server.server_runner.updateToConfigFile()
                 elif command == "BGCOLOR" and gColor is not None:
-                    self.server.server_runner.background = gColor
+                    self.server.server_runner.backgroundColorRGB = gColor
+                    self.server.server_runner.updateToConfigFile()
             elif command == "FONT" and len(commands) > 1:
                 # Get the font name to show
                 fontname = commands[1].replace('\x00', '').strip().lower()
@@ -174,13 +179,16 @@ class RunServer(SampleBase):
         try:
             fileinfo = json.load(open(self.fileinformation))
             self.powerState = fileinfo["powerState"]
-            self.max_brightness = int(255.0*fileinfo["brightness"])/100 
-            rgb = colorsys.hls_to_rgb(
-                float(fileinfo["hue"])/360,
-                0.5,
-                float(fileinfo["saturation"])/100)
-            # print fileinfo, rgb
-            self.textColor = (int(rgb[0]*255.0), int(rgb[1]*255.0), int(rgb[2]*255.0))
+            self.max_brightness = min(float(fileinfo["brightness"])/100.0, 1.0)
+            rgb = colorsys.hls_to_rgb(float(fileinfo["hue"])/360.0,
+                                      0.5,
+                                      float(fileinfo["saturation"])/100.0)
+            self.textColorRGB = (int(rgb[0]*255.0), int(rgb[1]*255.0), int(rgb[2]*255.0))
+
+            rgb = colorsys.hls_to_rgb(float(fileinfo["hue_bg"])/360.0,
+                                      float(fileinfo["light_bg"])/100.0
+                                      float(fileinfo["saturation_bg"])/100.0)
+            self.backgroundColorRGB = (int(rgb[0]*255.0), int(rgb[1]*255.0), int(rgb[2]*255.0))
         except:
             pass
 
@@ -188,11 +196,18 @@ class RunServer(SampleBase):
         try:
             fileinfo = {}
             fileinfo["powerState"] = self.powerState
-            fileinfo["brightness"] = self.max_brightness
-            rgb = (float(self.textColor[0]) / 255.0, float(self.textColor[1]) / 255.0, float(self.textColor[2]) / 255.0)
+            fileinfo["brightness"] = min(self.max_brightness * 100.0, 100.0)
+            rgb = (float(self.textColorRGB[0]) / 255.0, float(self.textColorRGB[1]) / 255.0, float(self.textColorRGB[2]) / 255.0)
             hls = colorsys.rgb_to_hls(rgb[0], rgb[1], rgb[2])
             fileinfo["hue"] = int(hls[0]*360)
             fileinfo["saturation"] = int(hls[2]*100)
+
+            rgb = (float(self.backgroundColorRGB[0]) / 255.0, float(self.backgroundColorRGB[1]) / 255.0, float(self.backgroundColorRGB[2]) / 255.0)
+            hls = colorsys.rgb_to_hls(rgb[0], rgb[1], rgb[2])
+            fileinfo["hue_bg"] = int(hls[0]*360)
+            fileinfo["light_bg"] = int(hls[1]*100)
+            fileinfo["saturation_bg"] = int(hls[2]*100)
+
             json.dump(fileinfo,open(self.fileinformation,"w+"))            
         except Exception as e:
             print "updateToConfigFile", e
@@ -215,12 +230,12 @@ class RunServer(SampleBase):
         self.hour = None
         self.pos = 0
         self.sleeptime = 0.05
-        self.timeBeforeDimming = 0.0
+        self.timeBeforeIdle = 0.0
         self.updateFromConfigFile()
 
     def drawIdlePanel(self):
         # Idle Panel:
-        co, f, f2, ca = graphics.Color(self.textColor[0], self.textColor[1], self.textColor[2]), self.fontLittle, self.fontLittle2, self.offscreen_canvas
+        co, f, f2, ca = graphics.Color(self.textColorRGB[0], self.textColorRGB[1], self.textColorRGB[2]), self.fontLittle, self.fontLittle2, self.offscreen_canvas
         hm = time.strftime("%H%M%S")
                 
         # Print hours
@@ -249,49 +264,53 @@ class RunServer(SampleBase):
     def show(self):
         # Run forever
         while True:
-            # Wait for a certain time
+            # Wait for a certain time for each display
             time.sleep(self.sleeptime)
-            
-            timeBeforeDimming = self.timeBeforeDimming - time.time()
 
+            # Compute if we have to dim
+            timeBeforeIdle = self.timeBeforeIdle - time.time()
+
+            # Update data from configuration file
             self.updateFromConfigFile()
 
+            # Check if we are OFF
             if not self.powerState:
+                # Clear all content
                 self.offscreen_canvas.Clear()
                 self.offscreen_canvas = self.matrix.SwapOnVSync(self.offscreen_canvas)
+                # We are currently off, we are not in a hurry
                 time.sleep(1)
                 continue
 
-            # First, fill the background
-            self.offscreen_canvas.Fill(self.background[0], self.background[1], self.background[2])
-            
+            # First, clear or fill the background
+            if self.hour is not None or self.text is not None or self.images is not None:
+                self.offscreen_canvas.Fill(self.backgroundColorRGB[0], self.backgroundColorRGB[1], self.backgroundColorRGB[2])
+            else:
+                self.offscreen_canvas.Clear()
+
             # Check if we are Idle
-            if timeBeforeDimming < 0 or (self.hour is None and self.text is None and self.images is None):
-
-                # Reset the canvas
-                self.offscreen_canvas.Fill(self.background[0], self.background[1], self.background[2]) # self.offscreen_canvas.Clear()
+            if timeBeforeIdle < 0 or (self.hour is None and self.text is None and self.images is None):
                 # Reduces the brightness
-                self.matrix.brightness = min(255, self.max_brightness) / 20
-
+                self.matrix.brightness = min(100.0, 100.0*self.max_brightness) / 20
                 # Draw informations of idle panel
                 self.drawIdlePanel()
                 # Show canvas
                 self.offscreen_canvas = self.matrix.SwapOnVSync(self.offscreen_canvas)
-                time.sleep(0.3) # No need to urge, we are idle
+                time.sleep(0.3) # No need to urge, we are idle, sleep extratime
                 continue
         
             # Reset dimming to 15 sec each 15 minutes when displaying time
             if self.hour and (time.localtime().tm_min % 15) == 0 and time.localtime().tm_sec < 10:
-                self.timeBeforeDimming = max(time.time() + 15, self.timeBeforeDimming)
+                self.timeBeforeIdle = max(time.time() + 15, self.timeBeforeIdle)
             
             # Dimm brightness after a certain amount of time
-            self.matrix.brightness = 0 if timeBeforeDimming < 0 else self.max_brightness if timeBeforeDimming > 15 else (self.max_brightness * timeBeforeDimming) / 15
+            self.matrix.brightness = 0 if timeBeforeIdle < 0 else max(255, int(255*(self.max_brightness if timeBeforeIdle > 15 else (self.max_brightness * timeBeforeIdle) / 15)))
             
             # In order of priority: Hour -> Text -> Image
             if self.text is not None or self.hour is not None:
                 try:
-                    # Draw text
-                    color = graphics.Color(self.textColor[0], self.textColor[1], self.textColor[2])
+                    # Draw hour/text
+                    color = graphics.Color(self.textColorRGB[0], self.textColorRGB[1], self.textColorRGB[2])
                     textToDraw = self.text if self.hour is None else time.strftime("%H:%M:%S")
                     leng = graphics.DrawText(self.offscreen_canvas, # Canvas destination
                                              self.font,             # Font to show
@@ -328,11 +347,11 @@ class RunServer(SampleBase):
     def run(self):
         self.fileinformation = self.args.conffile
         self.reset()
-        
-        self.background = (0, 0, 0)
+
+        self.backgroundColorRGB = (0, 0, 0)
+        self.textColorRGB = (255, 255, 255)
         self.updateFromConfigFile()
-        self.textColor = (255, 255, 255)
-        
+
         self.offscreen_canvas = self.matrix.CreateFrameCanvas()
         
         self.font = graphics.Font()
@@ -347,8 +366,8 @@ class RunServer(SampleBase):
 
         self.history = self.args.history
         
-        self.timeBeforeDimming  = time.time() + 300
-        self.max_brightness = self.matrix.brightness
+        self.timeBeforeIdle  = time.time() + 300
+        self.max_brightness = 1.0
         
         # Create a new server
         server = ThreadedTCPServer(('', self.args.listening_port), ServerHandler)
