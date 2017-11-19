@@ -191,7 +191,7 @@ class RunServer(SampleBase):
             hls = colorsys.rgb_to_hls(rgb)
             fileinfo["hue"] = int(hls[0]*360)
             fileinfo["saturation"] = int(hls[2]*100)
-            
+            json.dump(fileinfo,open(self.fileinformation,"w+"))            
         except:
             pass
 
