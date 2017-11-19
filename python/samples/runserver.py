@@ -186,7 +186,7 @@ class RunServer(SampleBase):
             self.textColorRGB = (int(rgb[0]*255.0), int(rgb[1]*255.0), int(rgb[2]*255.0))
 
             rgb = colorsys.hls_to_rgb(float(fileinfo["hue_bg"])/360.0,
-                                      float(fileinfo["light_bg"])/100.0
+                                      float(fileinfo["light_bg"])/100.0,
                                       float(fileinfo["saturation_bg"])/100.0)
             self.backgroundColorRGB = (int(rgb[0]*255.0), int(rgb[1]*255.0), int(rgb[2]*255.0))
         except:
