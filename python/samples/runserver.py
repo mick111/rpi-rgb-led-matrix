@@ -283,7 +283,7 @@ class RunServer(SampleBase):
                 continue
 
             # First, clear or fill the background
-            if self.hour is not None or self.text is not None
+            if self.hour is not None or self.text is not None:
                 self.offscreen_canvas.Fill(self.backgroundColorRGB[0], self.backgroundColorRGB[1], self.backgroundColorRGB[2])
             elif self.images is not None:
                 self.offscreen_canvas.Fill(self.imageBackgroundColorRGB[0], self.imageBackgroundColorRGB[1], self.imageBackgroundColorRGB[2])
