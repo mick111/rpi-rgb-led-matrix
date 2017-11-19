@@ -102,14 +102,14 @@ class ServerHandler(SocketServer.BaseRequestHandler):
                 self.server.server_runner.timeBeforeIdle = time.time() + 30
             elif command == "IMAGES" and len(commands) > 1:
                 # Show images from specific folder
-                self.server.server_runner.backgroundColorRGB = (0,0,0)
+                self.server.server_runner.imageBackgroundColorRGB = (0,0,0)
                 self.server.server_runner.images = [Image.open(i).convert("RGB") for i in sorted(glob.glob(commands[1]))]
                 self.server.server_runner.pos = 0
                 self.server.server_runner.sleeptime = 2
                 self.server.server_runner.timeBeforeIdle = time.time() + 4*len(self.server.server_runner.images)
             elif command == "NYAN" or command == "NYAN32":
                 # Show NyanCat
-                self.server.server_runner.backgroundColorRGB = (3,37,83)
+                self.server.server_runner.imageBackgroundColorRGB = (3,37,83)
                 self.server.server_runner.images = [Image.open(i).convert("RGB") for i in sorted(glob.glob('Nyan1664/*.gif'))]
                 self.server.server_runner.pos = -64 if command == "NYAN" else -32
                 self.server.server_runner.sleeptime = 0.07
@@ -283,8 +283,10 @@ class RunServer(SampleBase):
                 continue
 
             # First, clear or fill the background
-            if self.hour is not None or self.text is not None or self.images is not None:
+            if self.hour is not None or self.text is not None
                 self.offscreen_canvas.Fill(self.backgroundColorRGB[0], self.backgroundColorRGB[1], self.backgroundColorRGB[2])
+            elif self.images is not None:
+                self.offscreen_canvas.Fill(self.imageBackgroundColorRGB[0], self.imageBackgroundColorRGB[1], self.imageBackgroundColorRGB[2])
             else:
                 self.offscreen_canvas.Clear()
 
