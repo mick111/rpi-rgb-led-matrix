@@ -78,26 +78,27 @@ class ServerHandler(SocketServer.BaseRequestHandler):
             # Go on next command
             if data == '': continue
 
-            #print repr(data)
-
+            # Parse all content
             commands = data.strip().split(" ", 1)
             command = commands[0].strip().upper()
             
-            # Reset dimming
-            #if command not in ["GET"]:
+            # Reset dimming date, 300 seconds later
             self.server.server_runner.timeBeforeDimming = time.time() + 300
-            # Reset the display and log the command in the HISTORY for some commands
+
+            # Reset the display (remove all content) and log the command in the HISTORY for some commands
             if command not in ["BGCOLOR", "COLOR", "FONT", "GET", "DEDIM"] or (command == "GET" and len(commands) > 1 and commands[1].startswith("/CLEAR")):
                 self.server.server_runner.reset()
                 self.server.server_runner.addToHistory("[" + self.client_address[0] + "] " + data)
+
+            # Command parser
             if command == "CLEAR":
                 # Nothing to do, we already reset the display
                 pass
             elif command == "DEDIM":
-                # Reset dimming with lower value
+                # Reset dimming with lower value that usual value for dimming
                 self.server.server_runner.timeBeforeDimming = time.time() + 30
             elif command == "HOUR":
-                self.server.server_runner.hour = True#
+                self.server.server_runner.hour = True
             elif command == "IMAGES" and len(commands) > 1:
                 # Show images from specific folder
                 self.server.server_runner.images = [Image.open(i).convert("RGB") for i in sorted(glob.glob(commands[1]))]
@@ -164,6 +165,7 @@ class RunServer(SampleBase):
     def __init__(self, *args, **kwargs):
         super(RunServer, self).__init__(*args, **kwargs)
         # Adds more arguments
+        self.parser.add_argument("--conffile", help="Json file where parameters are read and saved.")
         self.parser.add_argument("--history", type=argparse.FileType('a+'), help="History of messages received by clients..")
         self.parser.add_argument("-l", "--listening-port", type=int, help="The port on which commands are received.", default=23735)
 
@@ -188,11 +190,12 @@ class RunServer(SampleBase):
             fileinfo["powerState"] = self.powerState
             fileinfo["brightness"] = self.max_brightness
             rgb = (float(self.textColor[0]) / 255.0, float(self.textColor[1]) / 255.0, float(self.textColor[2]) / 255.0)
-            hls = colorsys.rgb_to_hls(rgb)
+            hls = colorsys.rgb_to_hls(rgb[0], rgb[1], rgb[2])
             fileinfo["hue"] = int(hls[0]*360)
             fileinfo["saturation"] = int(hls[2]*100)
             json.dump(fileinfo,open(self.fileinformation,"w+"))            
-        except:
+        except Exception as e:
+            print "updateToConfigFile", e
             pass
 
     # Add a text line in history
@@ -268,7 +271,7 @@ class RunServer(SampleBase):
                 # Reset the canvas
                 self.offscreen_canvas.Fill(self.background[0], self.background[1], self.background[2]) # self.offscreen_canvas.Clear()
                 # Reduces the brightness
-                self.matrix.brightness = self.max_brightness / 20
+                self.matrix.brightness = min(255, self.max_brightness) / 20
 
                 # Draw informations of idle panel
                 self.drawIdlePanel()
@@ -323,7 +326,7 @@ class RunServer(SampleBase):
 
 
     def run(self):
-        self.fileinformation = "/home/pi/.homebridge/accessoriesConfig/MatricePorte.json"
+        self.fileinformation = self.args.conffile
         self.reset()
         
         self.background = (0, 0, 0)
