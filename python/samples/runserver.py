@@ -28,7 +28,10 @@ class Weather():
                      "salon": "28-0416526fcfff"}[room]
                f = open(os.path.join("/sys/bus/w1/devices/", ds, "w1_slave")).read()
                cls.ins[room] = float(f.split('\n')[1].split('=')[1])/1000
-        
+        except Exception as e:
+            pass
+
+        try:
             cls.out = None
             cls.ico = None
             j = requests.get("http://api.openweathermap.org/data/2.5/weather?id=2968815&APPID={}&units=metric".format(open("openweathermap_apikey").read().strip())).json()
