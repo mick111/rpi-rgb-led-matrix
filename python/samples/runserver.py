@@ -268,8 +268,8 @@ class RunServer(SampleBase):
             outTempPos = 13, 15
             iconPos = 23, 7
         elif ca.width == 64:
-            timePos = 5, 12
-            iconPos = 20, 6
+            timePos = 5, 11
+            iconPos = 20, 4
             inTempPos  = 32,  6
             outTempPos = 32, 15
 
@@ -278,7 +278,7 @@ class RunServer(SampleBase):
         # Print columns
         if int(hm[-1]) % 2: graphics.DrawText(ca, f2, timePos[0]+9, timePos[1], co, ":")
         # Print Minutes
-        graphics.DrawText(ca, f, timePos[0]+12, 6, co, hm[2:4])
+        graphics.DrawText(ca, f, timePos[0]+12, timePos[1], co, hm[2:4])
         
         # Print Temperatures
         temp = Weather().meanTemps()
