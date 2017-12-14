@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+#-*- coding: utf-8 -*-
 # Run a server to make things with the display
 from samplebase import SampleBase
 from rgbmatrix import graphics
