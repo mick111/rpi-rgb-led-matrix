@@ -20,6 +20,18 @@ class Weather():
     ico = None
 
     @classmethod
+    def meanTemps(cls):
+        temps = 0.0
+        count = 0
+        for (piece, temp) in cls.ins.items():
+            try:
+                temp += float(temp)
+                count += 1
+            except:
+                continue
+        return None if count == 0 else (temps / count)
+
+    @classmethod
     def updateTemps(cls):
         try:
             cls.ins = {"chambre": None, "salon": None}
@@ -258,16 +270,15 @@ class RunServer(SampleBase):
         graphics.DrawText(ca, f, 5+12, 6, co, hm[2:4])
         
         # Print Temperatures
-        temp = Weather().insideTemperature("chambre")
-        temp2 = Weather().insideTemperature("salon")
-        temp3 = (temp if temp is not None else 0.0) + (temp2 if temp2 is not None else 0.0)
-        temp = None if temp is None and temp2 is None else temp3 if temp is None or temp2 is None else (temp3/2)
-        if temp is not None: graphics.DrawText(ca, f, 0, 15, co, u"{:2.0f}".format(temp))
+        temp = Weather().meanTemps()
+        if temp is not None:
+            graphics.DrawText(ca, f, 0, 15, co, u"{:2.0f}".format(temp))
         
         # Print weather icon (origin is TopLeft, coordinates are flipped)
         ico = Weather().icon()
         if ico is not None:
-            self.offscreen_canvas.SetImage(ico, 23, 7)
+            ca.SetImage(ico, 23, 7)
+
         outTemp = Weather().outsideTemperature()
         if outTemp is not None:
             graphics.DrawText(ca, f, 13, 15, co, u"{:2.0f}".format(outTemp))
