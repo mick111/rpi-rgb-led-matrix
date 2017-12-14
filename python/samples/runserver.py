@@ -283,6 +283,10 @@ class RunServer(SampleBase):
         if outTemp is not None:
             graphics.DrawText(ca, f, 13, 15, co, u"{:2.0f}".format(outTemp))
 
+        graphics.DrawText(ca, f, 32, 15, co, u"{:2.0f}".format(ca.width))
+
+
+
     # Run loop of the server
     def show(self):
         # Run forever
