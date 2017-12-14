@@ -26,7 +26,7 @@ class Weather():
         count = 0
         for (piece, temp) in cls.ins.items():
             try:
-                temp += float(temp)
+                temps += float(temp)
                 count += 1
             except:
                 continue
