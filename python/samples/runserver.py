@@ -269,7 +269,7 @@ class RunServer(SampleBase):
             iconPos = 23, 7
         elif ca.width == 64:
             timePos = 5, 11
-            iconPos = 20, 4
+            iconPos = 52, 4
             inTempPos  = 32,  6
             outTempPos = 32, 15
 
