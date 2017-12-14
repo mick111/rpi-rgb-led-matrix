@@ -261,29 +261,38 @@ class RunServer(SampleBase):
         # Idle Panel:
         co, f, f2, ca = graphics.Color(self.textColorRGB[0], self.textColorRGB[1], self.textColorRGB[2]), self.fontLittle, self.fontLittle2, self.offscreen_canvas
         hm = time.strftime("%H%M%S")
-                
+
+        if ca.width == 32:
+            timePos = (5, 6)
+            inTempPos = 0, 15
+            outTempPos = 13, 15
+            iconPos = 23, 7
+        elif ca.width == 64:
+            timePos = 5, 12
+            iconPos = 20, 6
+            inTempPos  = 32,  6
+            outTempPos = 32, 15
+
         # Print hours
-        graphics.DrawText(ca, f, 5+0, 6, co, hm[0:2])
+        graphics.DrawText(ca, f, timePos[0]+0, timePos[1], co, hm[0:2])
         # Print columns
-        if int(hm[-1]) % 2: graphics.DrawText(ca, f2, 5+9, 6, co, ":")
+        if int(hm[-1]) % 2: graphics.DrawText(ca, f2, timePos[0]+9, timePos[1], co, ":")
         # Print Minutes
-        graphics.DrawText(ca, f, 5+12, 6, co, hm[2:4])
+        graphics.DrawText(ca, f, timePos[0]+12, 6, co, hm[2:4])
         
         # Print Temperatures
         temp = Weather().meanTemps()
         if temp is not None:
-            graphics.DrawText(ca, f, 0, 15, co, u"{:2.0f}".format(temp))
+            graphics.DrawText(ca, f, inTempPos[0], inTempPos[1], co, u"{:2.0f}".format(temp))
         
         # Print weather icon (origin is TopLeft, coordinates are flipped)
         ico = Weather().icon()
         if ico is not None:
-            ca.SetImage(ico, 23, 7)
+            ca.SetImage(ico, iconPos[0], iconPos[1])
 
         outTemp = Weather().outsideTemperature()
         if outTemp is not None:
-            graphics.DrawText(ca, f, 13, 15, co, u"{:2.0f}".format(outTemp))
-
-        graphics.DrawText(ca, f, 32, 15, co, u"{:2.0f}".format(ca.width))
+            graphics.DrawText(ca, f, outTempPos[0], outTempPos[1], co, u"{:2.0f}".format(outTemp))
 
 
 
