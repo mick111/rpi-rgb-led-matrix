@@ -84,7 +84,7 @@ class Weather():
                 "11d": "storm",
                 "13d": "snow",
                 "50d": "fog",
-                "01n": "clear-n",
+                "01n": "clear-night",
                 "02n": "partly-cloudy-night",
                 "03n": "cloudy",
                 "04n": "cloudy",
