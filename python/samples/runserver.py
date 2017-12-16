@@ -309,7 +309,7 @@ class RunServer(SampleBase):
             length = graphics.DrawText(ca, f, inTempPos[0], inTempPos[1], co, tempFormat.format(temp))
             if ca.width == 64:
                 length -= 1
-                length += graphics.DrawText(ca, f, inTempPos[0]+length, inTempPos[1], co, "°")
+                length += graphics.DrawText(ca, f, inTempPos[0]+length, inTempPos[1], co, u"°")
                 length -= 1
                 length += graphics.DrawText(ca, f, inTempPos[0]+length, inTempPos[1], co, "C")
 
