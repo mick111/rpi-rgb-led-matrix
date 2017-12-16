@@ -13,6 +13,7 @@ import os
 import requests
 import json
 import colorsys
+import math
 
 class Weather():
     lastupdate = time.time() - 100
@@ -69,7 +70,7 @@ class Weather():
     @classmethod
     def icon(cls, size):
         if time.time() - cls.lastupdate > 60: cls.updateTemps()
-        cls.iconNo = (cls.iconNo + 1) % 32
+        cls.iconNo = (cls.iconNo + 1)
         if size == 16:
             path = './weathericons/unicornhat_weather_icons-master/png/HD/'
         else:
@@ -94,7 +95,11 @@ class Weather():
                 "13n": "snow",
                 "50n": "fog",
             }.get(cls.ico,"error")
-        return Image.open(path + iconName +'.png').convert("RGB").crop((size*cls.iconNo, 0, size*cls.iconNo + size, size))
+        im = Image.open(path + iconName +'.png').convert("RGB")
+        imageWidth = im.size[0]
+        nbImages = int(math.ceil(float(imageWidth) / size))
+        iconNo = cls.iconNo % nbImages
+        return im.crop((size*iconNo, 0, size*iconNo + size, size))
 
 class ServerHandler(SocketServer.BaseRequestHandler):
     def setup(self):
