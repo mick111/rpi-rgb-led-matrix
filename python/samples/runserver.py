@@ -378,7 +378,7 @@ class RunServer(SampleBase):
             # Check if we are Idle
             if timeBeforeIdle < 0 or (self.hour is None and self.text is None and self.images is None):
                 # Reduces the brightness
-                #self.matrix.brightness = min(100.0, 100.0*self.max_brightness) / 20
+                self.matrix.brightness = min(100.0, 100.0*self.max_brightness)
                 # Draw informations of idle panel
                 self.drawIdlePanel()
                 # Show canvas
