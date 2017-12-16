@@ -321,10 +321,6 @@ class RunServer(SampleBase):
                 length += graphics.DrawText(ca, f, inTempPos[0]+length, inTempPos[1], co, u"°")
                 length -= 1
                 length += graphics.DrawText(ca, f, inTempPos[0]+length, inTempPos[1], co, "C")
-                length -= 2
-                length += graphics.DrawText(ca, f, outTempPos[0]+length, outTempPos[1], co, u"°")
-                length -= 1
-                length += graphics.DrawText(ca, f, outTempPos[0]+length, outTempPos[1], co, "C")
 
 
         
@@ -335,7 +331,12 @@ class RunServer(SampleBase):
 
         outTemp = Weather().outsideTemperature()
         if outTemp is not None:
-            graphics.DrawText(ca, f, outTempPos[0], outTempPos[1], co, tempFormat.format(outTemp))
+            length = graphics.DrawText(ca, f, outTempPos[0], outTempPos[1], co, tempFormat.format(outTemp))
+            if ca.width == 64:
+                length -= 2
+                length += graphics.DrawText(ca, f, outTempPos[0]+length, outTempPos[1], co, u"°")
+                length -= 1
+                length += graphics.DrawText(ca, f, outTempPos[0]+length, outTempPos[1], co, "C")
 
 
 
