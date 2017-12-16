@@ -69,7 +69,7 @@ class Weather():
     @classmethod
     def icon(cls, size):
         if time.time() - cls.lastupdate > 60: cls.updateTemps()
-        iconNo = (iconNo + 1) % 32
+        cls.iconNo = (cls.iconNo + 1) % 32
         if size == 32:
             path = './weathericons/unicornhat_weather_icons-master/png/HD/'
         else:
@@ -85,7 +85,7 @@ class Weather():
                 "13d": "snow",
                 "50d": "fog",
             }.get(cls.ico,"error")
-        return Image.open(path + iconName +'.png').convert("RGB").crop((size*iconNo, 0, size, size))
+        return Image.open(path + iconName +'.png').convert("RGB").crop((size*cls.iconNo, 0, size, size))
 
 class ServerHandler(SocketServer.BaseRequestHandler):
     def setup(self):
