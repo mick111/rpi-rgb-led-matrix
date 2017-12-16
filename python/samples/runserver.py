@@ -287,14 +287,13 @@ class RunServer(SampleBase):
             outTempPos = 13, 15
             iconSize = 8
             iconPos = 23, 7
-            tempFormat = u"{:2.0f}"
         elif ca.width == 64:
             timePos = 5, 11
             iconPos = 64-16, 0
             iconSize = 16
             inTempPos  = 32,  6
             outTempPos = 32, 15
-            tempFormat = u"{:2.0f}°C"
+
 
         # Print hours
         graphics.DrawText(ca, f, timePos[0]+0, timePos[1], co, hm[0:2])
@@ -304,9 +303,17 @@ class RunServer(SampleBase):
         graphics.DrawText(ca, f, timePos[0]+12, timePos[1], co, hm[2:4])
         
         # Print Temperatures
+        tempFormat = u"{:2.0f}"
         temp = Weather().meanTemps()
         if temp is not None:
-            graphics.DrawText(ca, f, inTempPos[0], inTempPos[1], co, tempFormat.format(temp))
+            length = graphics.DrawText(ca, f, inTempPos[0], inTempPos[1], co, tempFormat.format(temp))
+            if ca.width == 64:
+                length -= 1
+                length += graphics.DrawText(ca, f, inTempPos[0]+length, inTempPos[1], co, "°")
+                length -= 1
+                length += graphics.DrawText(ca, f, inTempPos[0]+length, inTempPos[1], co, "C")
+
+
         
         # Print weather icon (origin is TopLeft, coordinates are flipped)
         ico = Weather().icon(iconSize)
