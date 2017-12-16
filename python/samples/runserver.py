@@ -49,7 +49,7 @@ class Weather():
             cls.ico = None
             j = requests.get("http://api.openweathermap.org/data/2.5/weather?id=2968815&APPID={}&units=metric".format(open("openweathermap_apikey").read().strip())).json()
             cls.out = float(j['main']['temp']) #float(requests.get("http://api.openweathermap.org/data/2.5/weather?id=2968815&APPID={}&units=metric".format(open("openweathermap_apikey").read().strip())).json()['main']['temp'])
-            cls.ico = Image.open('./weathericons/' + j['weather'][0]['icon']+'.png').convert("RGB")
+            cls.ico = j['weather'][0]['icon']
         except Exception as e:
             pass
         cls.lastupdate = time.time()
@@ -64,10 +64,28 @@ class Weather():
         if time.time() - cls.lastupdate > 60: cls.updateTemps()
         return cls.out
 
+
+    iconNo = 0
     @classmethod
-    def icon(cls):
+    def icon(cls, size):
         if time.time() - cls.lastupdate > 60: cls.updateTemps()
-        return cls.ico
+        iconNo = (iconNo + 1) % 32
+        if size == 32:
+            path = './weathericons/unicornhat_weather_icons-master/png/HD/'
+        else:
+            path = './weathericons/unicornhat_weather_icons-master/png/SD/'
+        iconName = {
+                "01d": "clear-day",
+                "02d": "partialy-cloudy-day",
+                "03d": "cloudy",
+                "04d": "cloudy",
+                "09d": "rain",
+                "10d": "rain",
+                "11d": "storm",
+                "13d": "snow",
+                "50d": "fog",
+            }.get(cls.ico,"error")
+        return Image.open(path + iconName +'.png').convert("RGB").crop((size*iconNo, 0, size, size))
 
 class ServerHandler(SocketServer.BaseRequestHandler):
     def setup(self):
@@ -267,11 +285,13 @@ class RunServer(SampleBase):
             timePos = (5, 6)
             inTempPos = 0, 15
             outTempPos = 13, 15
+            iconSize = 8
             iconPos = 23, 7
             tempFormat = u"{:2.0f}"
         elif ca.width == 64:
             timePos = 5, 11
-            iconPos = 52, 4
+            iconPos = 64-16, 0
+            iconSize = 16
             inTempPos  = 32,  6
             outTempPos = 32, 15
             tempFormat = u"{:2.0f}°C"
@@ -289,7 +309,7 @@ class RunServer(SampleBase):
             graphics.DrawText(ca, f, inTempPos[0], inTempPos[1], co, tempFormat.format(temp))
         
         # Print weather icon (origin is TopLeft, coordinates are flipped)
-        ico = Weather().icon()
+        ico = Weather().icon(iconSize)
         if ico is not None:
             ca.SetImage(ico, iconPos[0], iconPos[1])
 
