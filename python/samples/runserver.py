@@ -70,7 +70,7 @@ class Weather():
     def icon(cls, size):
         if time.time() - cls.lastupdate > 60: cls.updateTemps()
         cls.iconNo = (cls.iconNo + 1) % 32
-        if size == 32:
+        if size == 16:
             path = './weathericons/unicornhat_weather_icons-master/png/HD/'
         else:
             path = './weathericons/unicornhat_weather_icons-master/png/SD/'
