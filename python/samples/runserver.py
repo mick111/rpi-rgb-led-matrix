@@ -84,7 +84,7 @@ class Weather():
                 "11d": "storm",
                 "13d": "snow",
                 "50d": "fog",
-                "01n": "clear-night",
+                "01n": "clear-n",
                 "02n": "partly-cloudy-night",
                 "03n": "cloudy",
                 "04n": "cloudy",
@@ -317,7 +317,7 @@ class RunServer(SampleBase):
         if temp is not None:
             length = graphics.DrawText(ca, f, inTempPos[0], inTempPos[1], co, tempFormat.format(temp))
             if ca.width == 64:
-                length -= 1
+                length -= 2
                 length += graphics.DrawText(ca, f, inTempPos[0]+length, inTempPos[1], co, u"°")
                 length -= 1
                 length += graphics.DrawText(ca, f, inTempPos[0]+length, inTempPos[1], co, "C")
