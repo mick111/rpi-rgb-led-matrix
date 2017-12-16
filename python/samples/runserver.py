@@ -85,7 +85,7 @@ class Weather():
                 "13d": "snow",
                 "50d": "fog",
             }.get(cls.ico,"error")
-        return Image.open(path + iconName +'.png').convert("RGB").crop((size*cls.iconNo, 0, size, size))
+        return Image.open(path + iconName +'.png').convert("RGB").crop((size*cls.iconNo, 0, size*cls.iconNo + size, size))
 
 class ServerHandler(SocketServer.BaseRequestHandler):
     def setup(self):
