@@ -75,8 +75,8 @@ class Weather():
         else:
             path = './weathericons/unicornhat_weather_icons-master/png/SD/'
         iconName = {
-                "01d": "clear-day",
-                "02d": "partialy-cloudy-day",
+            "01d": "clear-day",
+                "02d": "partly-cloudy-day",
                 "03d": "cloudy",
                 "04d": "cloudy",
                 "09d": "rain",
@@ -84,6 +84,15 @@ class Weather():
                 "11d": "storm",
                 "13d": "snow",
                 "50d": "fog",
+                "01n": "clear-night",
+                "02n": "partly-cloudy-night",
+                "03n": "cloudy",
+                "04n": "cloudy",
+                "09n": "rain",
+                "10n": "rain",
+                "11n": "storm",
+                "13n": "snow",
+                "50n": "fog",
             }.get(cls.ico,"error")
         return Image.open(path + iconName +'.png').convert("RGB").crop((size*cls.iconNo, 0, size*cls.iconNo + size, size))
 
