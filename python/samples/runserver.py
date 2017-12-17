@@ -72,7 +72,7 @@ class Weather():
         if time.time() - cls.lastupdate > 60: cls.updateTemps()
         cls.iconNo = (cls.iconNo + 1)
         if size == 16:
-            path = './weathericons/unicornhat_weather_icons-master/png/HD/'
+            path = './weathericons/mick111/'
         else:
             path = './weathericons/unicornhat_weather_icons-master/png/SD/'
         iconName = {
