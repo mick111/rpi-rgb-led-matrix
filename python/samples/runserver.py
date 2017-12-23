@@ -14,6 +14,7 @@ import requests
 import json
 import colorsys
 import math
+import random
 
 class Weather():
     lastupdate = time.time() - 100
@@ -65,46 +66,75 @@ class Weather():
         if time.time() - cls.lastupdate > 60: cls.updateTemps()
         return cls.out
 
-
+    selectedAnimation = 0
     iconNo = 0
     @classmethod
     def icon(cls, size):
+        # Update the temperatures if needed
         if time.time() - cls.lastupdate > 60: cls.updateTemps()
+
+        # Tick + 1
         cls.iconNo = (cls.iconNo + 1)
+
         if size == 16:
             path = './weathericons/mick111/'
         else:
             path = './weathericons/unicornhat_weather_icons-master/png/SD/'
+
         iconName = {
             "01d": "clear-day",
-                "02d": "partly-cloudy-day",
-                "03d": "cloudy",
-                "04d": "cloudy",
-                "09d": "rain",
-                "10d": "rain",
-                "11d": "storm",
-                "13d": "snow",
-                "50d": "fog",
-                "01n": "clear-night",
-                "02n": "partly-cloudy-night",
-                "03n": "cloudy",
-                "04n": "cloudy",
-                "09n": "rain",
-                "10n": "rain",
-                "11n": "storm",
-                "13n": "snow",
-                "50n": "fog",
-            }.get(cls.ico,"error")
+            "02d": "partly-cloudy-day",
+            "03d": "cloudy",
+            "04d": "cloudy",
+            "09d": "rain",
+            "10d": "rain",
+            "11d": "storm",
+            "13d": "snow",
+            "50d": "fog",
+            "01n": "clear-night",
+            "02n": "partly-cloudy-night",
+            "03n": "cloudy",
+            "04n": "cloudy",
+            "09n": "rain",
+            "10n": "rain",
+            "11n": "storm",
+            "13n": "snow",
+            "50n": "fog",
+        }.get(cls.ico,"error")
         im = Image.open(path + iconName +'.png').convert("RGB")
+
+        # Deduce the number of images according to the size of the file
         imageWidth = im.size[0]
-        nbImages = int(math.ceil(float(imageWidth) / size))
-        iconNo = cls.iconNo % nbImages
-        return im.crop((size*iconNo, 0, size*iconNo + size, size))
+        imageHeight = im.size[1]
+        nbAnimations = int(math.ceil(float(imageHeight) / size))
+        nbIcons = int(math.ceil(float(imageWidth) / size))
+
+        # Make some temporization on first image
+        moduleImages = nbIcons + (10 if nbAnimations > 1 else 0)
+
+        # Get the icon number
+        iconNo = cls.iconNo % moduleImages
+
+        # Change selected animation if we are at the end of the current animation
+        if iconNo == (moduleImages - 1):
+            cls.selectedAnimation = int(math.floor(random.uniform(0, nbAnimations)))
+
+        if cls.selectedAnimation >= nbAnimations:
+             cls.selectedAnimation = 0
+
+        # Compute horizontal and vertical offset
+        hOffset = size*(iconNo if iconNo < nbIcons else 0)
+        vOffset = size*cls.selectedAnimation
+
+        image = im.crop(hOffset, vOffset,
+                        hOffset + size, vOffset + size))
+
+        return image
 
 class ServerHandler(SocketServer.BaseRequestHandler):
     def setup(self):
         pass
-    
+
     def handle(self):
         # Receive a new connection from the outside world
         print "Connection from {}".format(self.client_address[0])
@@ -119,7 +149,7 @@ class ServerHandler(SocketServer.BaseRequestHandler):
           # Parse received data. Each commands must be separated by a '\n'
           datas = data.split("\n")
 
-          # Show the data to be processed                              
+          # Show the data to be processed
           print repr(datas)
 
           for data in datas:
@@ -129,7 +159,7 @@ class ServerHandler(SocketServer.BaseRequestHandler):
             # Parse all content
             commands = data.strip().split(" ", 1)
             command = commands[0].strip().upper()
-            
+
             # Reset dimming date, 300 seconds later
             self.server.server_runner.timeBeforeIdle = time.time() + 300
 
@@ -265,7 +295,7 @@ class RunServer(SampleBase):
             fileinfo["light_bg"] = int(hls[1]*100)
             fileinfo["saturation_bg"] = int(hls[2]*100)
 
-            json.dump(fileinfo,open(self.fileinformation,"w+"))            
+            json.dump(fileinfo,open(self.fileinformation,"w+"))
         except Exception as e:
             print "updateToConfigFile", e
             pass
@@ -315,7 +345,7 @@ class RunServer(SampleBase):
         if int(hm[-1]) % 2: graphics.DrawText(ca, f2, timePos[0]+9, timePos[1], co, ":")
         # Print Minutes
         graphics.DrawText(ca, f, timePos[0]+12, timePos[1], co, hm[2:4])
-        
+
         # Print Temperatures
         tempFormat = u"{:2.0f}"
         temp = Weather().meanTemps()
@@ -328,7 +358,7 @@ class RunServer(SampleBase):
                 length += graphics.DrawText(ca, f, inTempPos[0]+length, inTempPos[1], co, "C")
 
 
-        
+
         # Print weather icon (origin is TopLeft, coordinates are flipped)
         ico = Weather().icon(iconSize)
         if ico is not None:
@@ -385,14 +415,14 @@ class RunServer(SampleBase):
                 self.offscreen_canvas = self.matrix.SwapOnVSync(self.offscreen_canvas)
                 time.sleep(0.3) # No need to urge, we are idle, sleep extratime
                 continue
-        
+
             # Reset dimming to 15 sec each 15 minutes when displaying time
             if self.hour and (time.localtime().tm_min % 15) == 0 and time.localtime().tm_sec < 10:
                 self.timeBeforeIdle = max(time.time() + 15, self.timeBeforeIdle)
-            
+
             # Dimm brightness after a certain amount of time
             self.matrix.brightness = 0 if timeBeforeIdle < 0 else max(255, int(255*(self.max_brightness if timeBeforeIdle > 15 else (self.max_brightness * timeBeforeIdle) / 15)))
-            
+
             # In order of priority: Hour -> Text -> Image
             if self.text is not None or self.hour is not None:
                 try:
@@ -404,7 +434,7 @@ class RunServer(SampleBase):
                                              self.pos, 12,          # Position
                                              color,                 # Color
                                              textToDraw) # Data to draw
-                                             
+
                     # Next position is shifted by one on the left
                     self.pos -= 1
                     if (self.pos + leng < 0):
@@ -417,11 +447,11 @@ class RunServer(SampleBase):
                 # Get the current image
                 im = self.images[self.pos % len(self.images)]
                 width, height = im.size
-                
+
                 # Origin is TopLeft, coordinates are flipped
                 posX = min(self.pos-width, self.offscreen_canvas.width-width)
                 self.offscreen_canvas.SetImage(im, posX, 0)
-                
+
                 # Next position is shifted by one on the right
                 self.pos += 1
                 if self.pos > 1000:
@@ -440,7 +470,7 @@ class RunServer(SampleBase):
         self.updateFromConfigFile()
 
         self.offscreen_canvas = self.matrix.CreateFrameCanvas()
-        
+
         self.font = graphics.Font()
         self.font.LoadFont("../../fonts/9x15.bdf")
 
@@ -448,19 +478,19 @@ class RunServer(SampleBase):
         self.fontLittle.LoadFont("../../fonts/5x7.bdf")
         self.fontLittle2 = graphics.Font()
         self.fontLittle2.LoadFont("../../fonts/4x6.bdf")
-        
+
         self.pos = self.offscreen_canvas.width
 
         self.history = self.args.history
-        
+
         self.timeBeforeIdle  = time.time() + 300
         self.max_brightness = 1.0
-        
+
         # Create a new server
         server = ThreadedTCPServer(('', self.args.listening_port), ServerHandler)
         server.server_runner = self
         server.allow_reuse_address = True
-        
+
         # Start a thread with the server -- that thread will then start one
         # more thread for each request
         server_thread = threading.Thread(target=server.serve_forever)
@@ -468,10 +498,10 @@ class RunServer(SampleBase):
         server_thread.daemon = True
         print "Serving on port", server.server_address
         server_thread.start()
-        
+
         # Start thread for showing text
         self.show()
-    
+
         server.shutdown()
         server.server_close()
 
