@@ -9,11 +9,12 @@
 # Short-Description: Led Banner Server
 # Description:    Starts the Led Banner server
 ### END INIT INFO
-dir="/home/pi/Documents/display16x32/rpi-rgb-led-matrix/python/samples"
-cmd="sudo /usr/bin/python $dir/runserver.py --history /var/log/$name.history -R 180 -r 16 --led-pwm-lsb-nanoseconds 300 --led-slowdown-gpio 2"
-user="pi"
 
 name=`basename $0`
+dir="/home/pi/Documents/display16x32/rpi-rgb-led-matrix/bindings/python/samples"
+args=" --conffile /etc/$name.json --history /var/log/$name.history -c 2 -R 180 -r 16 --led-pwm-lsb-nanoseconds 100 --led-slowdown-gpio 2"
+cmd="sudo /usr/bin/python $dir/runserver.py $args"
+user="pi"
 pid_file="/var/run/$name.pid"
 stdout_log="/var/log/$name.log"
 stderr_log="/var/log/$name.err"
