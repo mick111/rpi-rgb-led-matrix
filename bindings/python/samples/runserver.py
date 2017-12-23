@@ -472,12 +472,12 @@ class RunServer(SampleBase):
         self.offscreen_canvas = self.matrix.CreateFrameCanvas()
 
         self.font = graphics.Font()
-        self.font.LoadFont("../../fonts/9x15.bdf")
+        self.font.LoadFont("../../../fonts/9x15.bdf")
 
         self.fontLittle = graphics.Font()
-        self.fontLittle.LoadFont("../../fonts/5x7.bdf")
+        self.fontLittle.LoadFont("../../../fonts/5x7.bdf")
         self.fontLittle2 = graphics.Font()
-        self.fontLittle2.LoadFont("../../fonts/4x6.bdf")
+        self.fontLittle2.LoadFont("../../../fonts/4x6.bdf")
 
         self.pos = self.offscreen_canvas.width
 
