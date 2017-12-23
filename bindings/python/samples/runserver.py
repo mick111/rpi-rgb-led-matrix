@@ -127,7 +127,7 @@ class Weather():
         vOffset = size*cls.selectedAnimation
 
         image = im.crop(hOffset, vOffset,
-                        hOffset + size, vOffset + size))
+                        hOffset + size, vOffset + size)
 
         return image
 
