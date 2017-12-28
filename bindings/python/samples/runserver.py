@@ -232,7 +232,7 @@ class ServerHandler(SocketServer.BaseRequestHandler):
                 # Get the font name to show
                 fontname = commands[1].replace('\x00', '').strip().lower()
                 # Go through all available fonts
-                for i in glob.glob('../../fonts/*.bdf'):
+                for i in glob.glob('../../../fonts/*.bdf'):
                     if fontname in i.lower():
                         self.server.server_runner.font.LoadFont(i)
                         break
@@ -472,12 +472,12 @@ class RunServer(SampleBase):
         self.offscreen_canvas = self.matrix.CreateFrameCanvas()
 
         self.font = graphics.Font()
-        self.font.LoadFont("../../../fonts/9x15.bdf")
+        self.font.LoadFont("/home/pi/Documents/display16x32/rpi-rgb-led-matrix/fonts/9x15.bdf")
 
         self.fontLittle = graphics.Font()
-        self.fontLittle.LoadFont("../../../fonts/5x7.bdf")
+        self.fontLittle.LoadFont("/home/pi/Documents/display16x32/rpi-rgb-led-matrix/fonts/5x7.bdf")
         self.fontLittle2 = graphics.Font()
-        self.fontLittle2.LoadFont("../../../fonts/4x6.bdf")
+        self.fontLittle2.LoadFont("/home/pi/Documents/display16x32/rpi-rgb-led-matrix/fonts/4x6.bdf")
 
         self.pos = self.offscreen_canvas.width
 
