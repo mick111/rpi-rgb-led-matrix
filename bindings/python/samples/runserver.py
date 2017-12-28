@@ -49,7 +49,7 @@ class Weather():
         try:
             cls.out = None
             cls.ico = None
-            j = requests.get("http://api.openweathermap.org/data/2.5/weather?id=2968815&APPID={}&units=metric".format(open("openweathermap_apikey").read().strip())).json()
+            j = requests.get("http://api.openweathermap.org/data/2.5/weather?id=2968815&APPID={}&units=metric".format(cls.openweathermap_apikey)).json()
             cls.out = float(j['main']['temp']) #float(requests.get("http://api.openweathermap.org/data/2.5/weather?id=2968815&APPID={}&units=metric".format(open("openweathermap_apikey").read().strip())).json()['main']['temp'])
             cls.ico = j['weather'][0]['icon']
         except Exception as e:
@@ -249,6 +249,7 @@ class RunServer(SampleBase):
         super(RunServer, self).__init__(*args, **kwargs)
         # Adds more arguments
         self.parser.add_argument("--conffile", help="Json file where parameters are read and saved.", default="/etc/ledbanner.json")
+        self.parser.add_argument("--openweathermap_apikey", help="File Containing Open Weather Map API key.", default="/etc/openweathermap_apikey")
         self.parser.add_argument("--history", type=argparse.FileType('a+'), help="History of messages received by clients..")
         self.parser.add_argument("-l", "--listening-port", type=int, help="The port on which commands are received.", default=23735)
 
@@ -463,6 +464,8 @@ class RunServer(SampleBase):
 
     def run(self):
         self.fileinformation = self.args.conffile
+        Weather.openweathermap_apikey = open(self.args.openweathermap_apikey).read().strip()
+        
         self.reset()
 
         self.backgroundColorRGB = (0, 0, 0)
