@@ -24,6 +24,7 @@ namespace rgb_matrix {
 class GPIO;
 class PinPulser;
 namespace internal {
+class RowAddressSetter;
 
 // An opaque type used within the framebuffer that can be used
 // to copy between PixelMappers.
@@ -36,13 +37,13 @@ struct PixelDesignator {
   uint32_t mask;
 };
 
-class PixelMapper {
+class PixelDesignatorMap {
 public:
-  PixelMapper(int width, int height);
-  ~PixelMapper();
+  PixelDesignatorMap(int width, int height);
+  ~PixelDesignatorMap();
 
   // Get a writable version of the PixelDesignator. Outside Framebuffer used
-  // by the RGBMatrix to re-assign mappings to new PixelMappers.
+  // by the RGBMatrix to re-assign mappings to new PixelDesignatorMappers.
   PixelDesignator *get(int x, int y);
 
   inline int width() const { return width_; }
@@ -63,14 +64,15 @@ public:
   Framebuffer(int rows, int columns, int parallel,
               int scan_mode,
               const char* led_sequence, bool inverse_color,
-              PixelMapper **mapper);
+              PixelDesignatorMap **mapper);
   ~Framebuffer();
 
   // Initialize GPIO bits for output. Only call once.
   static void InitHardwareMapping(const char *named_hardware);
   static void InitGPIO(GPIO *io, int rows, int parallel,
                        bool allow_hardware_pulsing,
-                       int pwm_lsb_nanoseconds);
+                       int pwm_lsb_nanoseconds,
+                       int row_address_type);
 
   // Set PWM bits used for output. Default is 11, but if you only deal with
   // simple comic-colors, 1 might be sufficient. Lower require less CPU.
@@ -105,6 +107,7 @@ public:
 
 private:
   static const struct HardwareMapping *hardware_mapping_;
+  static RowAddressSetter *row_setter_;
 
   // This returns the gpio-bit for given color (one of 'R', 'G', 'B'). This is
   // returning the right value in case led_sequence_ is _not_ "RGB"
@@ -130,7 +133,6 @@ private:
   uint8_t brightness_;
 
   const int double_rows_;
-  const uint8_t row_mask_;
   const size_t buffer_size_;
 
   // The frame-buffer is organized in bitplanes.
@@ -142,7 +144,7 @@ private:
   gpio_bits_t *bitplane_buffer_;
   inline gpio_bits_t *ValueAt(int double_row, int column, int bit);
 
-  PixelMapper **shared_mapper_;  // Storage in RGBMatrix.
+  PixelDesignatorMap **shared_mapper_;  // Storage in RGBMatrix.
 };
 }  // namespace internal
 }  // namespace rgb_matrix

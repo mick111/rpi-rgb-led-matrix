@@ -25,6 +25,8 @@
 
 #include <vector>
 
+#include "multiplex-mappers-internal.h"
+
 namespace rgb_matrix {
 RuntimeOptions::RuntimeOptions() :
 #ifdef RGB_SLOWDOWN_GPIO
@@ -145,13 +147,18 @@ static bool FlagInit(int &argc, char **&argv,
       if (ConsumeStringFlag("rgb-sequence", it, end,
                             &mopts->led_rgb_sequence, &err))
         continue;
+      if (ConsumeStringFlag("pixel-mapper", it, end,
+                            &mopts->pixel_mapper_config, &err))
+        continue;
       if (ConsumeIntFlag("rows", it, end, &mopts->rows, &err))
         continue;
-      if (ConsumeIntFlag("rotation", it, end, &mopts->rotation, &err))
+      if (ConsumeIntFlag("cols", it, end, &mopts->cols, &err))
         continue;
       if (ConsumeIntFlag("chain", it, end, &mopts->chain_length, &err))
         continue;
       if (ConsumeIntFlag("parallel", it, end, &mopts->parallel, &err))
+        continue;
+      if (ConsumeIntFlag("multiplexing", it, end, &mopts->multiplexing, &err))
         continue;
       if (ConsumeIntFlag("brightness", it, end, &mopts->brightness, &err))
         continue;
@@ -161,6 +168,9 @@ static bool FlagInit(int &argc, char **&argv,
         continue;
       if (ConsumeIntFlag("pwm-lsb-nanoseconds", it, end,
                          &mopts->pwm_lsb_nanoseconds, &err))
+        continue;
+      if (ConsumeIntFlag("row-addr-type", it, end,
+                         &mopts->row_address_type, &err))
         continue;
       if (ConsumeBoolFlag("show-refresh", it, &mopts->show_refresh_rate))
         continue;
@@ -317,6 +327,18 @@ RGBMatrix *CreateMatrixFromOptions(const RGBMatrix::Options &options,
   return result;
 }
 
+static std::string CreateAvailableMultiplexString(
+  const internal::MuxMapperList &m) {
+  std::string result;
+  char buffer[256];
+  for (size_t i = 0; i < m.size(); ++i) {
+    if (i != 0) result.append("; ");
+    snprintf(buffer, sizeof(buffer), "%d=%s", (int) i+1, m[i]->GetName());
+    result.append(buffer);
+  }
+  return result;
+}
+
 // Public interface.
 RGBMatrix *CreateMatrixFromFlags(int *argc, char ***argv,
                                  RGBMatrix::Options *m_opt_in,
@@ -335,20 +357,38 @@ RGBMatrix *CreateMatrixFromFlags(int *argc, char ***argv,
 
 void PrintMatrixFlags(FILE *out, const RGBMatrix::Options &d,
                       const RuntimeOptions &r) {
+  const internal::MuxMapperList &muxers
+    = internal::GetRegisteredMultiplexMappers();
+
+  std::vector<std::string> mapper_names = GetAvailablePixelMappers();
+  std::string available_mappers;
+  for (size_t i = 0; i < mapper_names.size(); ++i) {
+    if (i != 0) available_mappers.append(", ");
+    available_mappers.append("\"").append(mapper_names[i]).append("\"");
+  }
+
   fprintf(out,
           "\t--led-gpio-mapping=<name> : Name of GPIO mapping used. Default \"%s\"\n"
-          "\t--led-rows=<rows>         : Panel rows. 8, 16, 32 or 64. "
+          "\t--led-rows=<rows>         : Panel rows. Typically 8, 16, 32 or 64."
+          " (Default: %d).\n"
+          "\t--led-cols=<cols>         : Panel columns. Typically 32 or 64. "
           "(Default: %d).\n"
           "\t--led-rotation=<degrees>  : Panel rotation. 0, 90, 180 or 270. "
           "(Default: %d).\n"
           "\t--led-chain=<chained>     : Number of daisy-chained panels. "
           "(Default: %d).\n"
-          "\t--led-parallel=<parallel> : For A/B+ models or RPi2,3b: parallel "
-          "chains. range=1..3 (Default: %d).\n"
+          "\t--led-parallel=<parallel> : Parallel chains. range=1..3 "
+          "(Default: %d).\n"
+          "\t--led-multiplexing=<0..%d> : Mux type: 0=direct; %s (Default: 0)\n"
+          "\t--led-pixel-mapper        : Semicolon-separated list of pixel-mappers to arrange pixels.\n"
+          "\t                            Optional params after a colon e.g. \"U-mapper;Rotate:90\"\n"
+          "\t                            Available: %s. Default: \"\"\n"
           "\t--led-pwm-bits=<1..11>    : PWM bits (Default: %d).\n"
           "\t--led-brightness=<percent>: Brightness in percent (Default: %d).\n"
           "\t--led-scan-mode=<0..1>    : 0 = progressive; 1 = interlaced "
           "(Default: %d).\n"
+          "\t--led-row-addr-type=<0..2>: 0 = default; 1 = AB-addressed panels; 2 = direct row select"
+          "(Default: 0).\n"
           "\t--led-%sshow-refresh        : %show refresh rate.\n"
           "\t--led-%sinverse             "
           ": Switch if your matrix has inverse colors %s.\n"
@@ -358,7 +398,9 @@ void PrintMatrixFlags(FILE *out, const RGBMatrix::Options &d,
           "(Default: %d)\n"
           "\t--led-%shardware-pulse   : %sse hardware pin-pulse generation.\n",
           d.hardware_mapping,
-          d.rows, d.rotation, d.chain_length, d.parallel,
+          d.rows, d.cols, d.chain_length, d.parallel,
+          (int) muxers.size(), CreateAvailableMultiplexString(muxers).c_str(),
+          available_mappers.c_str(),
           d.pwm_bits, d.brightness, d.scan_mode,
           d.show_refresh_rate ? "no-" : "", d.show_refresh_rate ? "Don't s" : "S",
           d.inverse_colors ? "no-" : "",    d.inverse_colors ? "off" : "on",
@@ -367,7 +409,7 @@ void PrintMatrixFlags(FILE *out, const RGBMatrix::Options &d,
           !d.disable_hardware_pulsing ? "Don't u" : "U");
 
   fprintf(out, "\t--led-slowdown-gpio=<0..2>: "
-          "Slowdown GPIO. Needed for faster Pis and/or slower panels "
+          "Slowdown GPIO. Needed for faster Pis/slower panels "
           "(Default: %d).\n", r.gpio_slowdown);
   if (r.daemon >= 0) {
     const bool on = (r.daemon > 0);
@@ -389,12 +431,18 @@ bool RGBMatrix::Options::Validate(std::string *err_in) const {
   std::string scratch;
   std::string *err = err_in ? err_in : &scratch;
   bool success = true;
-  if (rows != 8 && rows != 16 && rows != 32 && rows != 64) {
-    err->append("Invalid number or panel rows. "
-                "Should be one of 8, 16, 32 or 64\n");
+  if (rows < 8 || rows > 64 || rows % 2 != 0) {
+    err->append("Invalid number or rows per panel (--led-rows). "
+                "Should be in range of [8..64] and divisible by 2.\n");
     success = false;
   }
-    
+
+  if (cols < 16) {
+    err->append("Invlid number of columns for panel (--led-cols). "
+                "Typically that is something like 32 or 64\n");
+    success = false;
+  }
+
   if (rotation != 0 && rotation != 90 && rotation != 180 && rotation != 270) {
     err->append("Invalid rotation value. "
                 "Should be one of 0, 90, 180 or 270\n");
@@ -403,6 +451,19 @@ bool RGBMatrix::Options::Validate(std::string *err_in) const {
 
   if (chain_length < 1) {
     err->append("Chain-length outside usable range.\n");
+    success = false;
+  }
+
+  const internal::MuxMapperList &muxers
+    = internal::GetRegisteredMultiplexMappers();
+  if (multiplexing < 0 || multiplexing > (int)muxers.size()) {
+    err->append("Multiplexing can only be one of 0=normal; ")
+      .append(CreateAvailableMultiplexString(muxers));
+    success = false;
+  }
+
+  if (row_address_type < 0 || row_address_type > 2) {
+    err->append("Row address type values can be 0 (default), 1 (AB addressing), 2 (direct row select)\n");
     success = false;
   }
 
@@ -417,7 +478,7 @@ bool RGBMatrix::Options::Validate(std::string *err_in) const {
   }
 
   if (pwm_bits <= 0 || pwm_bits > 11) {
-    err->append("Invalid range of pwm-bits (0..11 allowed).\n");
+    err->append("Invalid range of pwm-bits (1..11 allowed).\n");
     success = false;
   }
 

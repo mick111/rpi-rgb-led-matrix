@@ -20,7 +20,7 @@
 // $ make led-image-viewer
 
 #include "led-matrix.h"
-#include "transformer.h"
+#include "pixel-mapper.h"
 #include "content-streamer.h"
 
 #include <fcntl.h>
@@ -227,9 +227,6 @@ static int usage(const char *progname) {
           "\t-s                        : If multiple images are given: shuffle.\n"
           "\nDisplay Options:\n"
           "\t-V<vsync-multiple>        : Expert: Only do frame vsync-swaps on multiples of refresh (default: 1)\n"
-          "\t-L                        : Large display, in which each chain is 'folded down'\n"
-          "\t                            in the middle in an U-arrangement to get more vertical space.\n"
-          "\t-R<angle>                 : Rotate output; steps of 90 degrees\n"
           );
 
   fprintf(stderr, "\nGeneral LED matrix options:\n");
@@ -262,8 +259,6 @@ int main(int argc, char *argv[]) {
   bool do_forever = false;
   bool do_center = false;
   bool do_shuffle = false;
-  bool large_display = false;  // 64x64 made out of 4 in sequence.
-  int angle = -361;
 
   // We remember ImageParams for each image, which will change whenever
   // there is a flag modifying them. This map keeps track of filenames
@@ -307,23 +302,26 @@ int main(int argc, char *argv[]) {
       do_shuffle = true;
       break;
     case 'r':
+      fprintf(stderr, "Instead of deprecated -r, use --led-rows=%s instead.\n",
+              optarg);
       matrix_options.rows = atoi(optarg);
       break;
     case 'c':
+      fprintf(stderr, "Instead of deprecated -c, use --led-chain=%s instead.\n",
+              optarg);
       matrix_options.chain_length = atoi(optarg);
       break;
     case 'P':
       matrix_options.parallel = atoi(optarg);
       break;
     case 'L':
-      if (matrix_options.chain_length == 1) {
-        // If this is still default, force the 64x64 arrangement.
-        matrix_options.chain_length = 4;
-      }
-      large_display = true;
+      fprintf(stderr, "-L is deprecated. Use\n\t--led-pixel-mapper=\"U-mapper\" --led-chain=4\ninstead.\n");
+      return 1;
       break;
     case 'R':
-      angle = atoi(optarg);
+      fprintf(stderr, "-R is deprecated. "
+              "Use --led-pixel-mapper=\"Rotate:%s\" instead.\n", optarg);
+      return 1;
       break;
     case 'O':
       stream_output = strdup(optarg);
@@ -355,17 +353,6 @@ int main(int argc, char *argv[]) {
   RGBMatrix *matrix = CreateMatrixFromOptions(matrix_options, runtime_opt);
   if (matrix == NULL)
     return 1;
-
-  if (large_display) {
-    // Mapping the coordinates of a 32x128 display mapped to a square of 64x64,
-    // or any other U-shape.
-    matrix->ApplyStaticTransformer(rgb_matrix::UArrangementTransformer(
-                                     matrix_options.parallel));
-  }
-
-  if (angle >= -360) {
-    matrix->ApplyStaticTransformer(rgb_matrix::RotateTransformer(angle));
-  }
 
   FrameCanvas *offscreen_canvas = matrix->CreateFrameCanvas();
 
@@ -434,6 +421,7 @@ int main(int argc, char *argv[]) {
             CopyStream(&reader, global_stream_writer, offscreen_canvas);
           }
         } else {
+          err_msg = "Can't read as image or compatible stream";
           delete file_info->content_stream;
           delete file_info;
           file_info = NULL;

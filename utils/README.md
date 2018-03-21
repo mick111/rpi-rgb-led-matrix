@@ -27,8 +27,8 @@ The resulting binary has a couple of flags.
 ```
 usage: ./led-image-viewer [options] <image> [option] [<image> ...]
 Options:
-        -C                        : Center images.
         -O<streamfile>            : Output to stream-file instead of matrix (Don't need to be root).
+        -C                        : Center images.
 
 These options affect images following them on the command line:
         -w<seconds>               : Regular image: Wait time in seconds before next image is shown (default: 1.5).
@@ -43,24 +43,27 @@ Options affecting display of multiple images:
 
 Display Options:
         -V<vsync-multiple>        : Expert: Only do frame vsync-swaps on multiples of refresh (default: 1)
-        -L                        : Large display, in which each chain is 'folded down'
-                                    in the middle in an U-arrangement to get more vertical space.
-        -R<angle>                 : Rotate output; steps of 90 degrees
 
 General LED matrix options:
         --led-gpio-mapping=<name> : Name of GPIO mapping used. Default "regular"
-        --led-rows=<rows>         : Panel rows. 8, 16, 32 or 64. (Default: 32).
+        --led-rows=<rows>         : Panel rows. Typically 8, 16, 32 or 64. (Default: 32).
+        --led-cols=<cols>         : Panel columns. Typically 32 or 64. (Default: 32).
         --led-chain=<chained>     : Number of daisy-chained panels. (Default: 1).
-        --led-parallel=<parallel> : For A/B+ models or RPi2,3b: parallel chains. range=1..3 (Default: 1).
+        --led-parallel=<parallel> : Parallel chains. range=1..3 (Default: 1).
+        --led-multiplexing=<0..6> : Mux type: 0=direct; 1=Stripe; 2=Checkered; 3=Spiral; 4=ZStripe; 5=ZnMirrorZStripe; 6=coreman (Default: 0)
+        --led-pixel-mapper        : Semicolon-separated list of pixel-mappers to arrange pixels.
+                                    Optional params after a colon e.g. "U-mapper;Rotate:90"
+                                    Available: "Rotate", "U-mapper". Default: ""
         --led-pwm-bits=<1..11>    : PWM bits (Default: 11).
         --led-brightness=<percent>: Brightness in percent (Default: 100).
         --led-scan-mode=<0..1>    : 0 = progressive; 1 = interlaced (Default: 0).
+        --led-row-addr-type=<0..2>: 0 = default; 1 = AB-addressed panels; 2 = direct row select(Default: 0).
         --led-show-refresh        : Show refresh rate.
         --led-inverse             : Switch if your matrix has inverse colors on.
         --led-rgb-sequence        : Switch if your matrix has led colors swapped (Default: "RGB")
         --led-pwm-lsb-nanoseconds : PWM Nanoseconds for LSB (Default: 130)
         --led-no-hardware-pulse   : Don't use hardware pin-pulse generation.
-        --led-slowdown-gpio=<0..2>: Slowdown GPIO. Needed for faster Pis and/or slower panels (Default: 1).
+        --led-slowdown-gpio=<0..2>: Slowdown GPIO. Needed for faster Pis/slower panels (Default: 1).
         --led-daemon              : Make the process run in the background as daemon.
         --led-no-drop-privs       : Don't drop privileges from 'root' after initializing the hardware.
 
@@ -114,7 +117,8 @@ sudo ./led-image-viewer --led-rows=32 --led-chain=4 --led-parallel=3 animation-o
 
 ### Video Viewer ###
 
-The video viewer allows to play common video formats on the RGB matrix.
+The video viewer allows to play common video formats on the RGB matrix (just
+the picture, no sound).
 
 Note, this is CPU intensive and decoding can result in an output that is not
 smooth. If you observe that, it is suggested to do one of these:
@@ -133,25 +137,28 @@ make video-viewer
 usage: ./video-viewer [options] <video>
 Options:
         -O<streamfile>     : Output to stream-file instead of matrix (don't need to be root).
-        -L                 : Large display, in which each chain is 'folded down'
-                             in the middle in an U-arrangement to get more vertical space.
-        -R<angle>          : Rotate output; steps of 90 degrees
         -v                 : verbose.
 
 General LED matrix options:
         --led-gpio-mapping=<name> : Name of GPIO mapping used. Default "regular"
-        --led-rows=<rows>         : Panel rows. 8, 16, 32 or 64. (Default: 32).
+        --led-rows=<rows>         : Panel rows. Typically 8, 16, 32 or 64. (Default: 32).
+        --led-cols=<cols>         : Panel columns. Typically 32 or 64. (Default: 32).
         --led-chain=<chained>     : Number of daisy-chained panels. (Default: 1).
-        --led-parallel=<parallel> : For A/B+ models or RPi2,3b: parallel chains. range=1..3 (Default: 1).
+        --led-parallel=<parallel> : Parallel chains. range=1..3 (Default: 1).
+        --led-multiplexing=<0..6> : Mux type: 0=direct; 1=Stripe; 2=Checkered; 3=Spiral; 4=ZStripe; 5=ZnMirrorZStripe; 6=coreman (Default: 0)
+        --led-pixel-mapper        : Semicolon-separated list of pixel-mappers to arrange pixels.
+                                    Optional params after a colon e.g. "U-mapper;Rotate:90"
+                                    Available: "Rotate", "U-mapper". Default: ""
         --led-pwm-bits=<1..11>    : PWM bits (Default: 11).
         --led-brightness=<percent>: Brightness in percent (Default: 100).
         --led-scan-mode=<0..1>    : 0 = progressive; 1 = interlaced (Default: 0).
+        --led-row-addr-type=<0..2>: 0 = default; 1 = AB-addressed panels; 2 = direct row select(Default: 0).
         --led-show-refresh        : Show refresh rate.
         --led-inverse             : Switch if your matrix has inverse colors on.
         --led-rgb-sequence        : Switch if your matrix has led colors swapped (Default: "RGB")
         --led-pwm-lsb-nanoseconds : PWM Nanoseconds for LSB (Default: 130)
         --led-no-hardware-pulse   : Don't use hardware pin-pulse generation.
-        --led-slowdown-gpio=<0..2>: Slowdown GPIO. Needed for faster Pis and/or slower panels (Default: 1).
+        --led-slowdown-gpio=<0..2>: Slowdown GPIO. Needed for faster Pis/slower panels (Default: 1).
         --led-daemon              : Make the process run in the background as daemon.
         --led-no-drop-privs       : Don't drop privileges from 'root' after initializing the hardware.
 ```
