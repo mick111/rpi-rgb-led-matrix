@@ -373,8 +373,6 @@ void PrintMatrixFlags(FILE *out, const RGBMatrix::Options &d,
           " (Default: %d).\n"
           "\t--led-cols=<cols>         : Panel columns. Typically 32 or 64. "
           "(Default: %d).\n"
-          "\t--led-rotation=<degrees>  : Panel rotation. 0, 90, 180 or 270. "
-          "(Default: %d).\n"
           "\t--led-chain=<chained>     : Number of daisy-chained panels. "
           "(Default: %d).\n"
           "\t--led-parallel=<parallel> : Parallel chains. range=1..3 "
@@ -440,12 +438,6 @@ bool RGBMatrix::Options::Validate(std::string *err_in) const {
   if (cols < 16) {
     err->append("Invlid number of columns for panel (--led-cols). "
                 "Typically that is something like 32 or 64\n");
-    success = false;
-  }
-
-  if (rotation != 0 && rotation != 90 && rotation != 180 && rotation != 270) {
-    err->append("Invalid rotation value. "
-                "Should be one of 0, 90, 180 or 270\n");
     success = false;
   }
 
