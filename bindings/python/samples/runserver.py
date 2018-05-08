@@ -24,7 +24,8 @@ class Weather():
     insideTimeInterval = 2*60
 
     # Timestamp sur la derniere mise a jour
-    lastupdate = time.time() - 100
+    lastInsideUpdate = time.time() - 100
+    lastOutsideUpdate = time.time() - 100
     # Temperatures interieures
     ins = {"chambre": None, "salon": None}
     # Temperature exterieure
