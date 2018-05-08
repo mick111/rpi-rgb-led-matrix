@@ -16,12 +16,23 @@ import colorsys
 import math
 import random
 
+# Classe pour gerer la Meteo
 class Weather():
+    # Intervale de temps entre chaque mise a jour
+    outsideTimeInterval = 10*60
+    # Intervale de temps entre chaque mise a jour
+    insideTimeInterval = 2*60
+
+    # Timestamp sur la derniere mise a jour
     lastupdate = time.time() - 100
+    # Temperatures interieures
     ins = {"chambre": None, "salon": None}
+    # Temperature exterieure
     out = None
+    # Icone a afficher
     ico = None
 
+    # Temperature moyenne des temperatures interieures
     @classmethod
     def meanTemps(cls):
         temps = 0.0
@@ -35,35 +46,52 @@ class Weather():
         return None if count == 0 else (temps / count)
 
     @classmethod
-    def updateTemps(cls):
+    def updateInsideTemps(cls):
+        # Mise a jour des temperatures interieures
         try:
+            # On reinitialise les valeurs
             cls.ins = {"chambre": None, "salon": None}
             for room in ["chambre", "salon"]:
+               # Identifiants des peripheriques One-Wire
                ds = {"chambre": "28-03164783ecff",
                      "salon": "28-0416526fcfff"}[room]
+               # Mise a jour des temperatures par lecture des fichiers de One-Wire
                f = open(os.path.join("/sys/bus/w1/devices/", ds, "w1_slave")).read()
+               # On reccupere et sauve la valeur
                cls.ins[room] = float(f.split('\n')[1].split('=')[1])/1000
         except Exception as e:
             pass
+        # On met a jour le timestamp
+        cls.lastInsideUpdate = time.time()
 
+    # Mise a jour des temperatures interieures et exterieure
+    @classmethod
+    def updateOutsideTemps(cls):
+        # Mise a jour de la temperature exterieure et de l'icone meteo
         try:
+            # On reinitialise les valeurs
             cls.out = None
             cls.ico = None
+
+            # On reccupere les valeurs par internet
             j = requests.get("http://api.openweathermap.org/data/2.5/weather?id=2968815&APPID={}&units=metric".format(cls.openweathermap_apikey)).json()
-            cls.out = float(j['main']['temp']) #float(requests.get("http://api.openweathermap.org/data/2.5/weather?id=2968815&APPID={}&units=metric".format(open("openweathermap_apikey").read().strip())).json()['main']['temp'])
+            cls.out = float(j['main']['temp'])
             cls.ico = j['weather'][0]['icon']
         except Exception as e:
             pass
-        cls.lastupdate = time.time()
+        # On met a jour le timestamp
+        cls.lastOutsideUpdate = time.time()
 
     @classmethod
     def insideTemperature(cls, room):
-        if time.time() - cls.lastupdate > 60: cls.updateTemps()
+        # On met a jour si necessaire
+        if time.time() - cls.lastInsideUpdate > cls.insideTimeInterval: cls.updateInsideTemps()
         return cls.ins[room]
 
     @classmethod
     def outsideTemperature(cls):
-        if time.time() - cls.lastupdate > 60: cls.updateTemps()
+        # On met a jour si necessaire
+        if time.time() - cls.lastOutsideUpdate > cls.outsideTimeInterval: cls.updateOutsideTemps()
         return cls.out
 
     selectedAnimation = 0
@@ -71,7 +99,7 @@ class Weather():
     @classmethod
     def icon(cls, size):
         # Update the temperatures if needed
-        if time.time() - cls.lastupdate > 60: cls.updateTemps()
+        if time.time() - cls.lastOutsideUpdate > cls.outsideTimeInterval: cls.updateOutsideTemps()
 
         # Tick + 1
         cls.iconNo = (cls.iconNo + 1)
@@ -131,33 +159,46 @@ class Weather():
 
         return image
 
+
+
 class ServerHandler(SocketServer.BaseRequestHandler):
+    # Nothing pecular to do on setup
     def setup(self):
         pass
 
     def handle(self):
         # Receive a new connection from the outside world
-        print "Connection from {}".format(self.client_address[0])
-        # Keep connection alive
+        # print "Connection from {}".format(self.client_address[0])
+
+        databuffer = ""
+        # Keep connection alive with an infinite loop
         while True:
-          # Read some data, we assume that we will not get more than 1024 bytes per received commands
-          data = self.request.recv(1024)
+            # Read some data, we assume that we will not get more than 1024 bytes per received commands
+            datarecv = self.request.recv(1024)
 
-          print "Received from {}".format(self.client_address[0])
-          # Data is none if the client disconnected
-          if not data: break
-          # Parse received data. Each commands must be separated by a '\n'
-          datas = data.split("\n")
+            # print "Received from {}".format(self.client_address[0])
+            # Received data is None if the client disconnected. We go outside the loop
+            if not datarecv: break
 
-          # Show the data to be processed
-          print repr(datas)
+            # We append the received data in the incomming buffer
+            databuffer += datarecv
 
-          for data in datas:
+            # Parse received data. Each commands must be separated by a '\n'
+            datasplit = databuffer.split('\n', 1)
+
+            if len(datasplit) < 2 : continue
+
+            # We extract the command to treat, we keep the rest for later
+            data, databuffer = datasplit[0], datasplit[1]
+
+            # Remove extra whitespaces
+            data = data.strip()
+
             # Go on next command
             if data == '': continue
 
             # Parse all content
-            commands = data.strip().split(" ", 1)
+            commands = data.split(" ", 1)
             command = commands[0].strip().upper()
 
             # Reset dimming date, 300 seconds later
@@ -196,11 +237,13 @@ class ServerHandler(SocketServer.BaseRequestHandler):
                 # Get History of commands and serves a web page
                 history = self.server.server_runner.getHistory()
                 self.request.sendall("""HTTP/1.1 200 OK\r\nDate: Sun, 19 Mar 2017 21:13:55 GMT\r\nServer: Apache/2.4.23 (Unix)\r\nVary: negotiate\r\nTCN: choice\r\nLast-Modified: Mon, 11 Jun 2007 18:53:14 GMT\r\nETag: "2d-432a5e4a73a80"\r\nContent-Type: text/html\r\n\r\n<html><body>{}</body></html>\r\n""".format("<br/>".join(history)))
-                return
+                # We disconnect the client
+                break
             elif command == "GET":
                 # Serves a dummy web page
                 self.request.sendall("""HTTP/1.1 200 OK\r\nDate: Sun, 19 Mar 2017 21:13:55 GMT\r\nServer: Apache/2.4.23 (Unix)\r\nVary: negotiate\r\nTCN: choice\r\nLast-Modified: Mon, 11 Jun 2007 18:53:14 GMT\r\nETag: "2d-432a5e4a73a80"\r\nContent-Type: text/html\r\n\r\n<html><body><h1>This is not a website...</h1><h6>Perdu!</h6></body></html>\r\n""")
-                return
+                # We disconnect the client
+                break
             elif command == "TEXT" and len(commands) > 1:
                 # Sets the text to show
                 self.server.server_runner.text = commands[1].decode('utf-8').strip()
@@ -264,6 +307,7 @@ class RunServer(SampleBase):
         brightness = fileinfo.get("brightness", 100.0)
         hue = fileinfo.get("hue", 0.0)
         saturation = fileinfo.get("saturation", 100.0)
+
         saturation_bg = fileinfo.get("saturation_bg", 100.0)
         light_bg = fileinfo.get("light_bg", 0.0)
         hue_bg = fileinfo.get("hue_bg", 0.0)
@@ -324,6 +368,9 @@ class RunServer(SampleBase):
     def drawIdlePanel(self):
         # Idle Panel:
         co, f, f2, ca = graphics.Color(self.textColorRGB[0], self.textColorRGB[1], self.textColorRGB[2]), self.fontLittle, self.fontLittle2, self.offscreen_canvas
+
+        ca.Fill(self.backgroundColorRGB[0], self.backgroundColorRGB[1], self.backgroundColorRGB[2])
+
         hm = time.strftime("%H%M%S")
 
         if ca.width == 32:
@@ -338,7 +385,6 @@ class RunServer(SampleBase):
             iconSize = 16
             inTempPos  = 32,  6
             outTempPos = 32, 15
-
 
         # Print hours
         graphics.DrawText(ca, f, timePos[0]+0, timePos[1], co, hm[0:2])
@@ -374,8 +420,6 @@ class RunServer(SampleBase):
                 length -= 1
                 length += graphics.DrawText(ca, f, outTempPos[0]+length, outTempPos[1], co, "C")
 
-
-
     # Run loop of the server
     def show(self):
         # Run forever
@@ -383,11 +427,11 @@ class RunServer(SampleBase):
             # Wait for a certain time for each display
             time.sleep(self.sleeptime)
 
-            # Compute if we have to dim
-            timeBeforeIdle = self.timeBeforeIdle - time.time()
-
-            # Update data from configuration file
-            self.updateFromConfigFile()
+            # Compute if we have to go to idle.
+            if self.timeBeforeIdle - time.time() < 0:
+                self.hour = None
+                self.text = None
+                self.images = None
 
             # Check if we are OFF
             if not self.powerState:
@@ -398,16 +442,8 @@ class RunServer(SampleBase):
                 time.sleep(1)
                 continue
 
-            # First, clear or fill the background
-            if self.hour is not None or self.text is not None:
-                self.offscreen_canvas.Fill(self.backgroundColorRGB[0], self.backgroundColorRGB[1], self.backgroundColorRGB[2])
-            elif self.images is not None:
-                self.offscreen_canvas.Fill(self.imageBackgroundColorRGB[0], self.imageBackgroundColorRGB[1], self.imageBackgroundColorRGB[2])
-            else:
-                self.offscreen_canvas.Clear()
-
-            # Check if we are Idle
-            if timeBeforeIdle < 0 or (self.hour is None and self.text is None and self.images is None):
+            # Check if we are Idle, eg nothing special to display
+            if (self.hour is None and self.text is None and self.images is None):
                 # Reduces the brightness
                 self.matrix.brightness = min(100.0, 100.0*self.max_brightness)
                 # Draw informations of idle panel
@@ -417,17 +453,14 @@ class RunServer(SampleBase):
                 time.sleep(0.3) # No need to urge, we are idle, sleep extratime
                 continue
 
-            # Reset dimming to 15 sec each 15 minutes when displaying time
-            if self.hour and (time.localtime().tm_min % 15) == 0 and time.localtime().tm_sec < 10:
-                self.timeBeforeIdle = max(time.time() + 15, self.timeBeforeIdle)
-
-            # Dimm brightness after a certain amount of time
-            self.matrix.brightness = 0 if timeBeforeIdle < 0 else max(255, int(255*(self.max_brightness if timeBeforeIdle > 15 else (self.max_brightness * timeBeforeIdle) / 15)))
+            # Update data from configuration file
+            self.updateFromConfigFile()
 
             # In order of priority: Hour -> Text -> Image
             if self.text is not None or self.hour is not None:
                 try:
                     # Draw hour/text
+                    self.offscreen_canvas.Fill(self.backgroundColorRGB[0], self.backgroundColorRGB[1], self.backgroundColorRGB[2])
                     color = graphics.Color(self.textColorRGB[0], self.textColorRGB[1], self.textColorRGB[2])
                     textToDraw = self.text if self.hour is None else time.strftime("%H:%M:%S")
                     leng = graphics.DrawText(self.offscreen_canvas, # Canvas destination
@@ -446,6 +479,7 @@ class RunServer(SampleBase):
 
             elif self.images is not None:
                 # Get the current image
+                self.offscreen_canvas.Fill(self.imageBackgroundColorRGB[0], self.imageBackgroundColorRGB[1], self.imageBackgroundColorRGB[2])
                 im = self.images[self.pos % len(self.images)]
                 width, height = im.size
 
@@ -465,7 +499,7 @@ class RunServer(SampleBase):
     def run(self):
         self.fileinformation = self.args.conffile
         Weather.openweathermap_apikey = open(self.args.openweathermap_apikey).read().strip()
-        
+
         self.reset()
 
         self.backgroundColorRGB = (0, 0, 0)
