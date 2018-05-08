@@ -25,7 +25,7 @@ class Weather():
 
     # Timestamp sur la derniere mise a jour
     lastInsideUpdate = time.time() - 10*60
-    lastOutsideUpdate = time.time() - 2*60
+    lastOutsideUpdate = time.time() - 10*60
     # Temperatures interieures
     ins = {"chambre": None, "salon": None}
     # Temperature exterieure
@@ -36,6 +36,9 @@ class Weather():
     # Temperature moyenne des temperatures interieures
     @classmethod
     def meanTemps(cls):
+        # On met a jour si necessaire
+        if time.time() - cls.lastInsideUpdate > cls.insideTimeInterval: cls.updateInsideTemps()
+
         temps = 0.0
         count = 0
         for (piece, temp) in cls.ins.items():
