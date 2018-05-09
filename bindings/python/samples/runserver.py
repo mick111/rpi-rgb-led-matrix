@@ -446,6 +446,9 @@ class RunServer(SampleBase):
                 time.sleep(1)
                 continue
 
+            # Update data from configuration file
+            self.updateFromConfigFile()
+
             # Check if we are Idle, eg nothing special to display
             if (self.hour is None and self.text is None and self.images is None):
                 # Reduces the brightness
@@ -456,9 +459,6 @@ class RunServer(SampleBase):
                 self.offscreen_canvas = self.matrix.SwapOnVSync(self.offscreen_canvas)
                 time.sleep(0.3) # No need to urge, we are idle, sleep extratime
                 continue
-
-            # Update data from configuration file
-            self.updateFromConfigFile()
 
             # In order of priority: Hour -> Text -> Image
             if self.text is not None or self.hour is not None:
