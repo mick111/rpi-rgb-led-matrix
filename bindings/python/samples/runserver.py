@@ -437,6 +437,9 @@ class RunServer(SampleBase):
                 self.text = None
                 self.images = None
 
+            # Update data from configuration file
+            self.updateFromConfigFile()
+
             # Check if we are OFF
             if not self.powerState:
                 # Clear all content
@@ -445,9 +448,6 @@ class RunServer(SampleBase):
                 # We are currently off, we are not in a hurry
                 time.sleep(1)
                 continue
-
-            # Update data from configuration file
-            self.updateFromConfigFile()
 
             # Check if we are Idle, eg nothing special to display
             if (self.hour is None and self.text is None and self.images is None):
