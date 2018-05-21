@@ -497,12 +497,12 @@ class RunServer(SampleBase):
                     else:
                         graphics.DrawText(self.offscreen_canvas, # Canvas destination
                                           self.fontTiny,             # Font to show
-                                          0, 14,                 # Position
+                                          1, 5,                 # Position
                                           color,                 # Color
                                           textToDraw[0]) # Data to draw
                         leng = graphics.DrawText(self.offscreen_canvas, # Canvas destination
                                                  self.fontLittle,             # Font to show
-                                                 self.pos, 10,          # Position
+                                                 self.pos, 15,          # Position
                                                  color,                 # Color
                                                  textToDraw[1]) # Data to draw
 
