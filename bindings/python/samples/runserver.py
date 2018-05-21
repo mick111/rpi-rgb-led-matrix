@@ -502,7 +502,7 @@ class RunServer(SampleBase):
                                           textToDraw[0]) # Data to draw
                         leng = graphics.DrawText(self.offscreen_canvas, # Canvas destination
                                                  self.fontSmall,             # Font to show
-                                                 self.pos, 15,          # Position
+                                                 self.pos, 14,          # Position
                                                  color,                 # Color
                                                  textToDraw[1]) # Data to draw
 
