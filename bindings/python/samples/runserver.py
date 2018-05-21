@@ -461,17 +461,51 @@ class RunServer(SampleBase):
                 continue
 
             # In order of priority: Hour -> Text -> Image
-            if self.text is not None or self.hour is not None:
+            if self.hour is not None:
                 try:
-                    # Draw hour/text
+                    # Draw hour
                     self.offscreen_canvas.Fill(self.backgroundColorRGB[0], self.backgroundColorRGB[1], self.backgroundColorRGB[2])
                     color = graphics.Color(self.textColorRGB[0], self.textColorRGB[1], self.textColorRGB[2])
-                    textToDraw = self.text if self.hour is None else time.strftime("%H:%M:%S")
+                    textToDraw = time.strftime("%H:%M:%S")
                     leng = graphics.DrawText(self.offscreen_canvas, # Canvas destination
                                              self.font,             # Font to show
                                              self.pos, 12,          # Position
                                              color,                 # Color
                                              textToDraw) # Data to draw
+
+                                             # Next position is shifted by one on the left
+                                             self.pos -= 1
+                                             if (self.pos + leng < 0):
+                                                 # Reset the position
+                                                 self.pos = self.offscreen_canvas.width
+                except Exception as e:
+                    print "Cannot draw Hour", str(e)
+
+            elif self.text is not None:
+                try:
+                    # Draw text
+                    self.offscreen_canvas.Fill(self.backgroundColorRGB[0], self.backgroundColorRGB[1], self.backgroundColorRGB[2])
+                    color = graphics.Color(self.textColorRGB[0], self.textColorRGB[1], self.textColorRGB[2])
+
+                    textToDraw = self.text.split(";", 1)
+                    if len(textToDraw) == 1:
+                        leng = graphics.DrawText(self.offscreen_canvas, # Canvas destination
+                                                 self.font,             # Font to show
+                                                 self.pos, 12,          # Position
+                                                 color,                 # Color
+                                                 textToDraw[0]) # Data to draw
+                    else:
+                        graphics.DrawText(self.offscreen_canvas, # Canvas destination
+                                          self.fontTiny,             # Font to show
+                                          0, 14,                 # Position
+                                          color,                 # Color
+                                          textToDraw[0]) # Data to draw
+                        leng = graphics.DrawText(self.offscreen_canvas, # Canvas destination
+                                                 self.fontLittle,             # Font to show
+                                                 self.pos, 10,          # Position
+                                                 color,                 # Color
+                                                 textToDraw[1]) # Data to draw
+
 
                     # Next position is shifted by one on the left
                     self.pos -= 1
@@ -517,8 +551,8 @@ class RunServer(SampleBase):
 
         self.fontLittle = graphics.Font()
         self.fontLittle.LoadFont("/home/pi/Documents/display16x32/rpi-rgb-led-matrix/fonts/5x7.bdf")
-        self.fontLittle2 = graphics.Font()
-        self.fontLittle2.LoadFont("/home/pi/Documents/display16x32/rpi-rgb-led-matrix/fonts/4x6.bdf")
+        self.fontTiny = graphics.Font()
+        self.fontTiny.LoadFont("/home/pi/Documents/display16x32/rpi-rgb-led-matrix/fonts/4x6.bdf")
 
         self.pos = self.offscreen_canvas.width
 
