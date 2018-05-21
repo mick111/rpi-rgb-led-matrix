@@ -180,7 +180,7 @@ class ServerHandler(SocketServer.BaseRequestHandler):
             # Read some data, we assume that we will not get more than 1024 bytes per received commands
             datarecv = self.request.recv(1024)
 
-            # print "Received from {}".format(self.client_address[0])
+            print "Received from {} [] : []".format(self.client_address[0], repr(datarecv), databuffer)
             # Received data is None if the client disconnected. We go outside the loop
             if not datarecv: break
 
