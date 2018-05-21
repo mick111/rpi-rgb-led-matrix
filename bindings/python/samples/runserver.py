@@ -468,16 +468,16 @@ class RunServer(SampleBase):
                     color = graphics.Color(self.textColorRGB[0], self.textColorRGB[1], self.textColorRGB[2])
                     textToDraw = time.strftime("%H:%M:%S")
                     leng = graphics.DrawText(self.offscreen_canvas, # Canvas destination
-                                             self.font,             # Font to show
-                                             self.pos, 12,          # Position
-                                             color,                 # Color
-                                             textToDraw) # Data to draw
+                                         self.font,             # Font to show
+                                         self.pos, 12,          # Position
+                                         color,                 # Color
+                                         textToDraw) # Data to draw
 
-                                             # Next position is shifted by one on the left
-                                             self.pos -= 1
-                                             if (self.pos + leng < 0):
-                                                 # Reset the position
-                                                 self.pos = self.offscreen_canvas.width
+                    # Next position is shifted by one on the left
+                    self.pos -= 1
+                    if (self.pos + leng < 0):
+                        # Reset the position
+                        self.pos = self.offscreen_canvas.width
                 except Exception as e:
                     print "Cannot draw Hour", str(e)
 
