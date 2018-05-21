@@ -501,7 +501,7 @@ class RunServer(SampleBase):
                                           color,                 # Color
                                           textToDraw[0]) # Data to draw
                         leng = graphics.DrawText(self.offscreen_canvas, # Canvas destination
-                                                 self.fontLittle,             # Font to show
+                                                 self.fontSmall,             # Font to show
                                                  self.pos, 15,          # Position
                                                  color,                 # Color
                                                  textToDraw[1]) # Data to draw
@@ -549,6 +549,8 @@ class RunServer(SampleBase):
         self.font = graphics.Font()
         self.font.LoadFont("/home/pi/Documents/display16x32/rpi-rgb-led-matrix/fonts/9x15.bdf")
 
+        self.fontSmall = graphics.Font()
+        self.fontSmall.LoadFont("/home/pi/Documents/display16x32/rpi-rgb-led-matrix/fonts/7x13.bdf")
         self.fontLittle = graphics.Font()
         self.fontLittle.LoadFont("/home/pi/Documents/display16x32/rpi-rgb-led-matrix/fonts/5x7.bdf")
         self.fontTiny = graphics.Font()
