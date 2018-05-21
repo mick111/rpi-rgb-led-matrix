@@ -550,7 +550,7 @@ class RunServer(SampleBase):
         self.font.LoadFont("/home/pi/Documents/display16x32/rpi-rgb-led-matrix/fonts/9x15.bdf")
 
         self.fontSmall = graphics.Font()
-        self.fontSmall.LoadFont("/home/pi/Documents/display16x32/rpi-rgb-led-matrix/fonts/6x9.bdf")
+        self.fontSmall.LoadFont("/home/pi/Documents/display16x32/rpi-rgb-led-matrix/fonts/6x10.bdf")
         self.fontLittle = graphics.Font()
         self.fontLittle.LoadFont("/home/pi/Documents/display16x32/rpi-rgb-led-matrix/fonts/5x7.bdf")
         self.fontTiny = graphics.Font()
