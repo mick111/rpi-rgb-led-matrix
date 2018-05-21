@@ -371,7 +371,7 @@ class RunServer(SampleBase):
 
     def drawIdlePanel(self):
         # Idle Panel:
-        co, f, f2, ca = graphics.Color(self.textColorRGB[0], self.textColorRGB[1], self.textColorRGB[2]), self.fontLittle, self.fontLittle2, self.offscreen_canvas
+        co, f, f2, ca = graphics.Color(self.textColorRGB[0], self.textColorRGB[1], self.textColorRGB[2]), self.fontLittle, self.fontTiny, self.offscreen_canvas
 
         ca.Fill(self.backgroundColorRGB[0], self.backgroundColorRGB[1], self.backgroundColorRGB[2])
 
