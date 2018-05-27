@@ -265,6 +265,7 @@ class ServerHandler(SocketServer.BaseRequestHandler):
                 self.server.server_runner.text = commands[1].decode('utf-8').strip()
                 print "TEXT SET TO SHOW", repr(self.server.server_runner.text)
                 self.server.server_runner.pos = self.server.server_runner.offscreen_canvas.width
+                self.server.server_runner.timeBeforeIdle = time.time() + 30
             elif (command == "COLOR" or command == "BGCOLOR") and len(commands) > 1:
                 # Sets the text color or the background color
                 color = commands[1].replace('\x00', '').strip().lower()
