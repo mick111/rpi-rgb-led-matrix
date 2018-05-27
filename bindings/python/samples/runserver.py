@@ -265,6 +265,16 @@ class ServerHandler(SocketServer.BaseRequestHandler):
                     self.server.server_runner.updateToConfigFile()
                 except:
                     pass
+            elif (command == "POWERSTATE") and len(commands) == 1:
+                try:
+                    self.server.server_runner.powerState = 1 - self.server.server_runner.powerState
+                except:
+                    pass
+            elif (command == "POWERSTATE") and len(commands) > 1:
+                try:
+                    self.server.server_runner.powerState = commands[1].upper() in ['ON', '1', 'TRUE', 'YES']
+                except:
+                    pass
             elif (command == "COLOR" or command == "BGCOLOR") and len(commands) > 1:
                 # Sets the text color or the background color
                 color = commands[1].replace('\x00', '').strip().lower()
