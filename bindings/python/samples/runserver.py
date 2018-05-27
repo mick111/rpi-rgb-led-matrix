@@ -261,7 +261,9 @@ class ServerHandler(SocketServer.BaseRequestHandler):
                 self.server.server_runner.pos = self.server.server_runner.offscreen_canvas.width
             elif (command == "BRIGHTNESS") and len(commands) > 1:
                 try:
+                    print "BRIGHTNESS", self.server.server_runner.max_brightness
                     self.server.server_runner.max_brightness = max(0, min(100.0*float(commands[1]), 100.0))
+                    print self.server.server_runner.max_brightness
                     self.server.server_runner.updateToConfigFile()
                 except:
                     pass
