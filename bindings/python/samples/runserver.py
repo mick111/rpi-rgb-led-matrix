@@ -298,6 +298,8 @@ class ServerHandler(SocketServer.BaseRequestHandler):
                         break
         # Client has disconnected
         print "Goodbye {}".format(self.client_address[0])
+        print self.server.server_runner.text
+
 
 # To make a Threaded TCP Server
 class ThreadedTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
