@@ -263,7 +263,7 @@ class ServerHandler(SocketServer.BaseRequestHandler):
                 # Sets the text to show
                 print "TEXT TO SHOW", repr(commands)
                 self.server.server_runner.text = commands[1].decode('utf-8').strip()
-                print "TEXT TO SHOW", repr(self.server.server_runner.text)
+                print "TEXT SET TO SHOW", repr(self.server.server_runner.text)
                 self.server.server_runner.pos = self.server.server_runner.offscreen_canvas.width
             elif (command == "COLOR" or command == "BGCOLOR") and len(commands) > 1:
                 # Sets the text color or the background color
@@ -376,6 +376,7 @@ class RunServer(SampleBase):
 
     # Reset the display
     def reset(self):
+        print "RESET TEXT DUE TO GO RESET CALL()"
         self.text = None
         self.images = None
         self.hour = None
@@ -449,6 +450,7 @@ class RunServer(SampleBase):
             # Compute if we have to go to idle.
             if self.timeBeforeIdle - time.time() < 0:
                 self.hour = None
+                print "RESET TEXT DUE TO GO TO IDLE IN SHOW()"
                 self.text = None
                 self.images = None
 
