@@ -262,6 +262,7 @@ class ServerHandler(SocketServer.BaseRequestHandler):
             elif (command == "BRIGHTNESS") and len(commands) > 1:
                 try:
                     self.server.server_runner.max_brightness = max(0, min(100.0*float(commands[1]), 100.0))
+                    self.server.server_runner.updateToConfigFile()
                 except:
                     pass
             elif (command == "COLOR" or command == "BGCOLOR") and len(commands) > 1:
