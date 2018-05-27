@@ -259,8 +259,12 @@ class ServerHandler(SocketServer.BaseRequestHandler):
                 # Sets the text to show
                 self.server.server_runner.text = commands[1].decode('utf-8').strip()
                 self.server.server_runner.pos = self.server.server_runner.offscreen_canvas.width
+            elif (command == "BRIGHTNESS") and len(commands) > 1:
+                try:
+                    self.server.server_runner.max_brightness = max(0, min(100.0*float(commands[1]), 100.0))
+                except:
+                    pass
             elif (command == "COLOR" or command == "BGCOLOR") and len(commands) > 1:
-                print "COLOR", command
                 # Sets the text color or the background color
                 color = commands[1].replace('\x00', '').strip().lower()
                 gColor = None
