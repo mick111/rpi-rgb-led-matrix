@@ -221,6 +221,8 @@ class ServerHandler(SocketServer.BaseRequestHandler):
                 self.server.server_runner.reset()
                 self.server.server_runner.addToHistory("[" + self.client_address[0] + "] " + data)
 
+            print commands
+
             # Command dispatch
             if command == "CLEAR":
                 # Nothing to do, we already reset the display
