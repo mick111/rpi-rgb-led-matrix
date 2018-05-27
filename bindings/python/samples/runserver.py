@@ -177,34 +177,34 @@ class ServerHandler(SocketServer.BaseRequestHandler):
         # Keep connection alive with an infinite loop
         while True:
             # Read some data, we assume that we will not get more than 1024 bytes per received commands
-            print "Waiting data from {}".format(self.client_address[0])
+            # print "Waiting data from {}".format(self.client_address[0])
             datarecv = self.request.recv(1024)
-            print "Received from {} [{}]".format(self.client_address[0], repr(datarecv))
+            # print "Received from {} [{}]".format(self.client_address[0], repr(datarecv))
 
             # Received data is None if the client disconnected. We go outside the loop
             if not datarecv: break
 
-            print "Appending data to [{}]".format(repr(databuffer))
+            # print "Appending data to [{}]".format(repr(databuffer))
             # We append the received data in the incomming buffer
             databuffer += datarecv
-            print "Resulting in [{}]".format(repr(databuffer))
+            # print "Resulting in [{}]".format(repr(databuffer))
 
             # Parse received data. Each commands must be separated by a '\n'
             datasplit = databuffer.split('\n', 1)
 
-            print r"Splitting with '\n': {}".format(repr(datasplit))
+            # print r"Splitting with '\n': {}".format(repr(datasplit))
 
             if len(datasplit) < 2: continue
 
             # We extract the command to treat, we keep the rest for later
             data, databuffer = datasplit[0], datasplit[1]
 
-            print r"Command to treat {}".format(repr(data))
+            # print r"Command to treat {}".format(repr(data))
 
             # Remove extra whitespaces
             data = data.strip()
 
-            print r"Stripped {}".format(repr(data))
+            # print r"Stripped {}".format(repr(data))
 
             # Go on next command if empty
             if data == '': continue
@@ -213,8 +213,8 @@ class ServerHandler(SocketServer.BaseRequestHandler):
             commands = data.split(" ", 1)
             command = commands[0].strip().upper()
 
-            print r"Command   {}".format(repr(command))
-            print r"Arguments {}".format(repr(commands[1:]))
+            # print r"Command   {}".format(repr(command))
+            # print r"Arguments {}".format(repr(commands[1:]))
 
             # Reset the display (remove all content) and log the command in the HISTORY for some commands
             if command not in ["BGCOLOR", "COLOR", "FONT", "GET"] or (command == "GET" and len(commands) > 1 and commands[1].startswith("/CLEAR")):
@@ -231,7 +231,6 @@ class ServerHandler(SocketServer.BaseRequestHandler):
                 self.server.server_runner.hour = True
             elif command == "IMAGES" and len(commands) > 1:
                 self.server.server_runner.timeBeforeIdle = time.time() + 4*len(self.server.server_runner.images)
-                print "timeBeforeIdle changed to {} because received IMAGES".format(self.server.server_runner.timeBeforeIdle)
                 # Show images from specific folder
                 self.server.server_runner.imageBackgroundColorRGB = (0,0,0)
                 self.server.server_runner.images = [Image.open(i).convert("RGB") for i in sorted(glob.glob(commands[1]))]
@@ -239,7 +238,6 @@ class ServerHandler(SocketServer.BaseRequestHandler):
                 self.server.server_runner.sleeptime = 2
             elif command == "NYAN" or command == "NYAN32":
                 self.server.server_runner.timeBeforeIdle = time.time() + 30
-                print "timeBeforeIdle changed to {} because received NYAN".format(self.server.server_runner.timeBeforeIdle)
                 # Show NyanCat
                 self.server.server_runner.imageBackgroundColorRGB = (3,37,83)
                 self.server.server_runner.images = [Image.open(i).convert("RGB") for i in sorted(glob.glob('Nyan1664/*.gif'))]
@@ -258,11 +256,8 @@ class ServerHandler(SocketServer.BaseRequestHandler):
                 break
             elif command == "TEXT" and len(commands) > 1:
                 self.server.server_runner.timeBeforeIdle = time.time() + 30
-                print "timeBeforeIdle changed to {} because received TEXT".format(self.server.server_runner.timeBeforeIdle)
                 # Sets the text to show
-                print "TEXT TO SHOW", repr(commands)
                 self.server.server_runner.text = commands[1].decode('utf-8').strip()
-                print "TEXT SET TO SHOW", repr(self.server.server_runner.text)
                 self.server.server_runner.pos = self.server.server_runner.offscreen_canvas.width
             elif (command == "COLOR" or command == "BGCOLOR") and len(commands) > 1:
                 # Sets the text color or the background color
@@ -359,7 +354,7 @@ class RunServer(SampleBase):
 
             json.dump(fileinfo,open(self.fileinformation,"w+"))
         except Exception as e:
-            print "updateToConfigFile", e
+            print "updateToConfigFile error", e
             pass
 
     # Add a text line in history
@@ -374,7 +369,6 @@ class RunServer(SampleBase):
 
     # Reset the display
     def reset(self):
-        print "RESET TEXT DUE TO GO RESET CALL()"
         self.text = None
         self.images = None
         self.hour = None
@@ -446,7 +440,6 @@ class RunServer(SampleBase):
 
             # Compute if we have to go to idle.
             if (self.timeBeforeIdle < time.time()):
-                print "RESET TEXT DUE TO GO TO IDLE IN SHOW()"
                 self.reset()
 
 
