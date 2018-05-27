@@ -216,20 +216,20 @@ class ServerHandler(SocketServer.BaseRequestHandler):
             # print r"Command   {}".format(repr(command))
             # print r"Arguments {}".format(repr(commands[1:]))
 
-            # Reset the display (remove all content) and log the command in the HISTORY for some commands
-            if command not in ["BGCOLOR", "COLOR", "FONT", "GET"] or (command == "GET" and len(commands) > 1 and commands[1].startswith("/CLEAR")):
-                self.server.server_runner.reset()
-                self.server.server_runner.addToHistory("[" + self.client_address[0] + "] " + data)
 
             # Command dispatch
             if command == "CLEAR":
-                # Nothing to do, we already reset the display
+                self.server.server_runner.reset()
                 self.server.server_runner.timeBeforeIdle = time.time()
                 pass
             elif command == "HOUR":
+                self.server.server_runner.reset()
+                self.server.server_runner.addToHistory("[" + self.client_address[0] + "] " + data)
                 self.server.server_runner.timeBeforeIdle = time.time() + 30
                 self.server.server_runner.hour = True
             elif command == "IMAGES" and len(commands) > 1:
+                self.server.server_runner.reset()
+                self.server.server_runner.addToHistory("[" + self.client_address[0] + "] " + data)
                 self.server.server_runner.timeBeforeIdle = time.time() + 4*len(self.server.server_runner.images)
                 # Show images from specific folder
                 self.server.server_runner.imageBackgroundColorRGB = (0,0,0)
@@ -237,12 +237,17 @@ class ServerHandler(SocketServer.BaseRequestHandler):
                 self.server.server_runner.pos = 0
                 self.server.server_runner.sleeptime = 2
             elif command == "NYAN" or command == "NYAN32":
+                self.server.server_runner.reset()
+                self.server.server_runner.addToHistory("[" + self.client_address[0] + "] " + data)
                 self.server.server_runner.timeBeforeIdle = time.time() + 30
                 # Show NyanCat
                 self.server.server_runner.imageBackgroundColorRGB = (3,37,83)
                 self.server.server_runner.images = [Image.open(i).convert("RGB") for i in sorted(glob.glob('Nyan1664/*.gif'))]
                 self.server.server_runner.pos = -64 if command == "NYAN" else -32
                 self.server.server_runner.sleeptime = 0.07
+            elif command == "GET" and len(commands) > 1 and commands[1].startswith("/CLEAR"):
+                self.server.server_runner.reset()
+                self.server.server_runner.timeBeforeIdle = time.time()
             elif command == "GET" and len(commands) > 1 and commands[1].startswith("/HISTORY"):
                 # Get History of commands and serves a web page
                 history = self.server.server_runner.getHistory()
@@ -255,6 +260,8 @@ class ServerHandler(SocketServer.BaseRequestHandler):
                 # We disconnect the client
                 break
             elif command == "TEXT" and len(commands) > 1:
+                self.server.server_runner.reset()
+                self.server.server_runner.addToHistory("[" + self.client_address[0] + "] " + data)
                 self.server.server_runner.timeBeforeIdle = time.time() + 30
                 # Sets the text to show
                 self.server.server_runner.text = commands[1].decode('utf-8').strip()
