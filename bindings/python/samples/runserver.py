@@ -216,9 +216,6 @@ class ServerHandler(SocketServer.BaseRequestHandler):
             # print r"Command   {}".format(repr(command))
             # print r"Arguments {}".format(repr(commands[1:]))
 
-
-            print commands
-
             # Command dispatch
             if command == "CLEAR":
                 self.server.server_runner.reset()
