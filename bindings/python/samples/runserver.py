@@ -179,7 +179,7 @@ class ServerHandler(SocketServer.BaseRequestHandler):
             # Read some data, we assume that we will not get more than 1024 bytes per received commands
             # print "Waiting data from {}".format(self.client_address[0])
             datarecv = self.request.recv(1024)
-            print "Received from {} [{}]".format(self.client_address[0], repr(datarecv))
+            # print "Received from {} [{}]".format(self.client_address[0], repr(datarecv))
 
             # Received data is None if the client disconnected. We go outside the loop
             if not datarecv: break
@@ -213,8 +213,8 @@ class ServerHandler(SocketServer.BaseRequestHandler):
             commands = data.split(" ", 1)
             command = commands[0].strip().upper()
 
-            print r"Command   {}".format(repr(command))
-            print r"Arguments {}".format(repr(commands[1:]))
+            # print r"Command   {}".format(repr(command))
+            # print r"Arguments {}".format(repr(commands[1:]))
 
             # Reset the display (remove all content) and log the command in the HISTORY for some commands
             if command not in ["BGCOLOR", "COLOR", "FONT", "GET"] or (command == "GET" and len(commands) > 1 and commands[1].startswith("/CLEAR")):
@@ -273,7 +273,10 @@ class ServerHandler(SocketServer.BaseRequestHandler):
                 elif color == 'white':   gColor = (255, 255, 255)
                 else:
                     try:
-                        components = [int(255 * float(col)) for col in color.split()]
+                        if color.startswith("#") and len(color) == 7:
+                            components = (int(color[1:3], 16), int(color[3:5], 16), int(color[5:7], 16))
+                        else:
+                            components = [int(255 * float(col)) for col in color.split()]
                         if len(components) == 3 : gColor = components
                     except Exception as e:
                         gColor = None
