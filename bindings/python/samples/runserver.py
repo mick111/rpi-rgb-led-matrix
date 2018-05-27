@@ -216,41 +216,35 @@ class ServerHandler(SocketServer.BaseRequestHandler):
             print r"Command   {}".format(repr(command))
             print r"Arguments {}".format(repr(commands[1:]))
 
-            # Reset dimming date, 300 seconds later
-            self.server.server_runner.timeBeforeIdle = time.time() + 300
-            print "timeBeforeIdle changed to {} because received command".format(self.server.server_runner.timeBeforeIdle)
-
             # Reset the display (remove all content) and log the command in the HISTORY for some commands
-            if command not in ["BGCOLOR", "COLOR", "FONT", "GET", "DEDIM"] or (command == "GET" and len(commands) > 1 and commands[1].startswith("/CLEAR")):
+            if command not in ["BGCOLOR", "COLOR", "FONT", "GET"] or (command == "GET" and len(commands) > 1 and commands[1].startswith("/CLEAR")):
                 self.server.server_runner.reset()
                 self.server.server_runner.addToHistory("[" + self.client_address[0] + "] " + data)
 
             # Command dispatch
             if command == "CLEAR":
                 # Nothing to do, we already reset the display
+                self.server.server_runner.timeBeforeIdle = time.time()
                 pass
-            elif command == "DEDIM":
-                # Reset dimming with lower value that usual value for dimming
-                self.server.server_runner.timeBeforeIdle = time.time() + 30
             elif command == "HOUR":
-                self.server.server_runner.hour = True
                 self.server.server_runner.timeBeforeIdle = time.time() + 30
+                self.server.server_runner.hour = True
             elif command == "IMAGES" and len(commands) > 1:
+                self.server.server_runner.timeBeforeIdle = time.time() + 4*len(self.server.server_runner.images)
+                print "timeBeforeIdle changed to {} because received IMAGES".format(self.server.server_runner.timeBeforeIdle)
                 # Show images from specific folder
                 self.server.server_runner.imageBackgroundColorRGB = (0,0,0)
                 self.server.server_runner.images = [Image.open(i).convert("RGB") for i in sorted(glob.glob(commands[1]))]
                 self.server.server_runner.pos = 0
                 self.server.server_runner.sleeptime = 2
-                self.server.server_runner.timeBeforeIdle = time.time() + 4*len(self.server.server_runner.images)
-                print "timeBeforeIdle changed to {} because received IMAGES".format(self.server.server_runner.timeBeforeIdle)
             elif command == "NYAN" or command == "NYAN32":
+                self.server.server_runner.timeBeforeIdle = time.time() + 30
+                print "timeBeforeIdle changed to {} because received NYAN".format(self.server.server_runner.timeBeforeIdle)
                 # Show NyanCat
                 self.server.server_runner.imageBackgroundColorRGB = (3,37,83)
                 self.server.server_runner.images = [Image.open(i).convert("RGB") for i in sorted(glob.glob('Nyan1664/*.gif'))]
                 self.server.server_runner.pos = -64 if command == "NYAN" else -32
                 self.server.server_runner.sleeptime = 0.07
-                self.server.server_runner.timeBeforeIdle = time.time() + 30
-                print "timeBeforeIdle changed to {} because received NYAN".format(self.server.server_runner.timeBeforeIdle)
             elif command == "GET" and len(commands) > 1 and commands[1].startswith("/HISTORY"):
                 # Get History of commands and serves a web page
                 history = self.server.server_runner.getHistory()
@@ -263,13 +257,13 @@ class ServerHandler(SocketServer.BaseRequestHandler):
                 # We disconnect the client
                 break
             elif command == "TEXT" and len(commands) > 1:
+                self.server.server_runner.timeBeforeIdle = time.time() + 30
+                print "timeBeforeIdle changed to {} because received TEXT".format(self.server.server_runner.timeBeforeIdle)
                 # Sets the text to show
                 print "TEXT TO SHOW", repr(commands)
                 self.server.server_runner.text = commands[1].decode('utf-8').strip()
                 print "TEXT SET TO SHOW", repr(self.server.server_runner.text)
                 self.server.server_runner.pos = self.server.server_runner.offscreen_canvas.width
-                self.server.server_runner.timeBeforeIdle = time.time() + 30
-                print "timeBeforeIdle changed to {} because received TEXT".format(self.server.server_runner.timeBeforeIdle)
             elif (command == "COLOR" or command == "BGCOLOR") and len(commands) > 1:
                 # Sets the text color or the background color
                 color = commands[1].replace('\x00', '').strip().lower()
@@ -303,7 +297,6 @@ class ServerHandler(SocketServer.BaseRequestHandler):
                         break
         # Client has disconnected
         print "Goodbye {}".format(self.client_address[0])
-        print self.server.server_runner.text
 
 
 # To make a Threaded TCP Server
@@ -387,8 +380,6 @@ class RunServer(SampleBase):
         self.hour = None
         self.pos = 0
         self.sleeptime = 0.05
-        self.timeBeforeIdle = 0.0
-        print "timeBeforeIdle changed to {} because RESET".format(self.timeBeforeIdle)
         self.updateFromConfigFile()
 
     def drawIdlePanel(self):
@@ -454,13 +445,10 @@ class RunServer(SampleBase):
             time.sleep(self.sleeptime)
 
             # Compute if we have to go to idle.
-            print "timeBeforeIdle TEST time.time(){}".format(time.time())
-            print "timeBeforeIdle TEST self.timeBeforeIdle: {}".format(self.timeBeforeIdle)
             if (self.timeBeforeIdle < time.time()):
-                self.hour = None
                 print "RESET TEXT DUE TO GO TO IDLE IN SHOW()"
-                self.text = None
-                self.images = None
+                self.reset()
+
 
             # Update data from configuration file
             self.updateFromConfigFile()
@@ -585,8 +573,7 @@ class RunServer(SampleBase):
 
         self.history = self.args.history
 
-        print "timeBeforeIdle change in INIT"
-        self.timeBeforeIdle  = time.time() + 300
+        self.timeBeforeIdle  = time.time()
         self.max_brightness = 1.0
 
         # Create a new server
