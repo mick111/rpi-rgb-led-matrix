@@ -213,8 +213,8 @@ class ServerHandler(SocketServer.BaseRequestHandler):
             commands = data.split(" ", 1)
             command = commands[0].strip().upper()
 
-            # print r"Command   {}".format(repr(command))
-            # print r"Arguments {}".format(repr(commands[1:]))
+            print r"Command   {}".format(repr(command))
+            print r"Arguments {}".format(repr(commands[1:]))
 
             # Reset the display (remove all content) and log the command in the HISTORY for some commands
             if command not in ["BGCOLOR", "COLOR", "FONT", "GET"] or (command == "GET" and len(commands) > 1 and commands[1].startswith("/CLEAR")):
