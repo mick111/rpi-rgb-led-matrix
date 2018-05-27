@@ -247,6 +247,8 @@ class ServerHandler(SocketServer.BaseRequestHandler):
             elif command == "GET" and len(commands) > 1 and commands[1].startswith("/CLEAR"):
                 self.server.server_runner.reset()
                 self.server.server_runner.timeBeforeIdle = time.time()
+                # We disconnect the client
+                break
             elif command == "GET" and len(commands) > 1 and commands[1].startswith("/HISTORY"):
                 # Get History of commands and serves a web page
                 history = self.server.server_runner.getHistory()
