@@ -172,38 +172,49 @@ class ServerHandler(SocketServer.BaseRequestHandler):
 
     def handle(self):
         # Receive a new connection from the outside world
-        # print "Connection from {}".format(self.client_address[0])
-
+        print "Connection from {}".format(self.client_address[0])
         databuffer = ""
         # Keep connection alive with an infinite loop
         while True:
             # Read some data, we assume that we will not get more than 1024 bytes per received commands
+            print "Waiting data from {}".format(self.client_address[0])
             datarecv = self.request.recv(1024)
+            print "Received from {} [{}]".format(self.client_address[0], repr(datarecv))
 
-            print "Received from {} [{}] : [{}]".format(self.client_address[0], repr(datarecv), databuffer)
             # Received data is None if the client disconnected. We go outside the loop
             if not datarecv: break
 
+            print "Appending data to [{}]".format(repr(databuffer))
             # We append the received data in the incomming buffer
             databuffer += datarecv
+            print "Resulting in [{}]".format(repr(databuffer))
 
             # Parse received data. Each commands must be separated by a '\n'
             datasplit = databuffer.split('\n', 1)
 
-            if len(datasplit) < 2 : continue
+            print r"Splitting with '\n': {}".format(repr(datasplit))
+
+            if len(datasplit) < 2: continue
 
             # We extract the command to treat, we keep the rest for later
             data, databuffer = datasplit[0], datasplit[1]
 
+            print r"Command to treat {}".format(repr(data))
+
             # Remove extra whitespaces
             data = data.strip()
 
-            # Go on next command
+            print r"Stripped {}".format(repr(data))
+
+            # Go on next command if empty
             if data == '': continue
 
             # Parse all content
             commands = data.split(" ", 1)
             command = commands[0].strip().upper()
+
+            print r"Command   {}".format(repr(command))
+            print r"Arguments {}".format(repr(commands[1:]))
 
             # Reset dimming date, 300 seconds later
             self.server.server_runner.timeBeforeIdle = time.time() + 300
@@ -250,7 +261,9 @@ class ServerHandler(SocketServer.BaseRequestHandler):
                 break
             elif command == "TEXT" and len(commands) > 1:
                 # Sets the text to show
+                print "TEXT TO SHOW", repr(commands)
                 self.server.server_runner.text = commands[1].decode('utf-8').strip()
+                print "TEXT TO SHOW", repr(self.server.server_runner.text)
                 self.server.server_runner.pos = self.server.server_runner.offscreen_canvas.width
             elif (command == "COLOR" or command == "BGCOLOR") and len(commands) > 1:
                 # Sets the text color or the background color
