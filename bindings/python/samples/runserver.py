@@ -259,12 +259,18 @@ class ServerHandler(SocketServer.BaseRequestHandler):
                 # Sets the text to show
                 self.server.server_runner.text = commands[1].decode('utf-8').strip()
                 self.server.server_runner.pos = self.server.server_runner.offscreen_canvas.width
+            elif (command == "BRIGHTNESS?"):
+                self.server.server_runner.updateFromConfigFile()
+                self.request.sendall("{}\n".format(self.server.server_runner.max_brightness*100.0))
             elif (command == "BRIGHTNESS") and len(commands) > 1:
                 try:
                     self.server.server_runner.max_brightness = max(0, min(float(commands[1])/100.0, 1.0))
                     self.server.server_runner.updateToConfigFile()
                 except:
                     pass
+            elif (command == "POWERSTATE?"):
+                self.server.server_runner.updateFromConfigFile()
+                self.request.sendall("{}\n".format('1' if self.server.server_runner.powerState else '0'))
             elif (command == "POWERSTATE") and len(commands) == 1:
                 try:
                     self.server.server_runner.powerState = 1 - self.server.server_runner.powerState
@@ -277,6 +283,12 @@ class ServerHandler(SocketServer.BaseRequestHandler):
                 except:
                     pass
                 self.server.server_runner.updateToConfigFile()
+            elif (command == "COLOR?"):
+                self.server.server_runner.updateFromConfigFile()
+                self.request.sendall("#{0:02X}{1:02X}{2:02X}\n".format(*self.server.server_runner.textColorRGB))
+            elif (command == "BGCOLOR?"):
+                self.server.server_runner.updateFromConfigFile()
+                self.request.sendall("#{0:02X}{1:02X}{2:02X}\n".format(*self.server.server_runner.backgroundColorRGB))
             elif (command == "COLOR" or command == "BGCOLOR") and len(commands) > 1:
                 # Sets the text color or the background color
                 color = commands[1].replace('\x00', '').strip().lower()
