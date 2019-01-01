@@ -248,7 +248,7 @@ class ServerHandler(SocketServer.BaseRequestHandler):
                     pass
                 self.server.server_runner.imageBackgroundColorRGB = (0,0,0)
                 self.server.server_runner.images = ims
-                self.server.server_runner.timeBeforeIdle = time.time() + 10*duration
+                self.server.server_runner.timeBeforeIdle = time.time() + (commands[2] if len(commands) > 2 else 10)*duration
                 self.server.server_runner.pos = 0
                 self.server.server_runner.sleeptime = duration/len(ims)
             elif command == "IMAGES" and len(commands) > 1:
