@@ -250,7 +250,7 @@ class ServerHandler(SocketServer.BaseRequestHandler):
                 self.server.server_runner.imageBackgroundColorRGB = (0,0,0)
                 self.server.server_runner.images = ims
                 self.server.server_runner.timeBeforeIdle = time.time() + (int(commands[2]) if len(commands) > 2 else 10)*duration
-                self.server.server_runner.pos = 32
+                self.server.server_runner.pos = 70
                 self.server.server_runner.sleeptime = duration/len(ims)
             elif command == "IMAGES" and len(commands) > 1:
                 self.server.server_runner.reset()
