@@ -243,7 +243,7 @@ class ServerHandler(SocketServer.BaseRequestHandler):
                         pixo = imo.load()
                         for x in range(8):
                             for y in range(8):
-                                 pixo[(4+x,4+y)] = pix[(5+5*x,5+5*y)]
+                                 pixo[(4+x,4+y)] = pix[(x,y)]
                         ims.append(imo)
                 except EOFError:
                     pass
