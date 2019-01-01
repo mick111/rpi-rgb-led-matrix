@@ -237,7 +237,7 @@ class ServerHandler(SocketServer.BaseRequestHandler):
                         im.seek(im.tell()+1)
                         imo = Image.new("RGB", (8, 8), "black")
                         pix = im.convert("RGB").load()
-                        pixo = im2.load()
+                        pixo = imo.load()
                         for x in range(8):
                             for y in range(8):
                                  pixo[(x,y)] = pix[(5+5*x,5+5*y)]
