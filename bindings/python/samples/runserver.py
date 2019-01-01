@@ -230,6 +230,7 @@ class ServerHandler(SocketServer.BaseRequestHandler):
             elif command == "URLGIF" and len(commands) > 1:
                 self.server.server_runner.reset()
                 self.server.server_runner.addToHistory("[" + self.client_address[0] + "] " + data)
+                commands = data.split(" ")
                 im = Image.open(urllib2.urlopen(commands[1]))
                 ims = []
                 duration = 0.0
