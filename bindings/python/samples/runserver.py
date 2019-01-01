@@ -15,6 +15,7 @@ import json
 import colorsys
 import math
 import random
+import urllib2
 
 # Classe pour gerer la Meteo
 class Weather():
@@ -226,6 +227,28 @@ class ServerHandler(SocketServer.BaseRequestHandler):
                 self.server.server_runner.addToHistory("[" + self.client_address[0] + "] " + data)
                 self.server.server_runner.timeBeforeIdle = time.time() + 30
                 self.server.server_runner.hour = True
+            elif command == "URLGIF" and len(commands) > 1:
+                self.server.server_runner.reset()
+                self.server.server_runner.addToHistory("[" + self.client_address[0] + "] " + data)
+                im = Image.open(urllib2.urlopen(commands[1]))
+                ims = []
+                try:
+                    while 1:
+                        im.seek(im.tell()+1)
+                        imo = Image.new("RGB", (8, 8), "black")
+                        pix = im.convert("RGB").load()
+                        pixo = im2.load()
+                        for x in range(8):
+                            for y in range(8):
+                                 pixo[(x,y)] = pix[(5+5*x,5+5*y)]
+                        ims.append(imo)
+                except EOFError:
+                    pass
+                self.server.server_runner.imageBackgroundColorRGB = (0,0,0)
+                self.server.server_runner.images = ims
+                self.server.server_runner.timeBeforeIdle = time.time() + 4*len(ims)
+                self.server.server_runner.pos = 0
+                self.server.server_runner.sleeptime = im.info['duration']
             elif command == "IMAGES" and len(commands) > 1:
                 self.server.server_runner.reset()
                 self.server.server_runner.addToHistory("[" + self.client_address[0] + "] " + data)
