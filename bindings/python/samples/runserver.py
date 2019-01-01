@@ -248,7 +248,7 @@ class ServerHandler(SocketServer.BaseRequestHandler):
                 self.server.server_runner.images = ims
                 self.server.server_runner.timeBeforeIdle = time.time() + 4*len(ims)
                 self.server.server_runner.pos = 0
-                self.server.server_runner.sleeptime = im.info['duration']
+                self.server.server_runner.sleeptime = float(im.info['duration'])/1000.0
             elif command == "IMAGES" and len(commands) > 1:
                 self.server.server_runner.reset()
                 self.server.server_runner.addToHistory("[" + self.client_address[0] + "] " + data)
