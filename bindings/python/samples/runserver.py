@@ -235,25 +235,31 @@ class ServerHandler(SocketServer.BaseRequestHandler):
                 commands = data.split(" ")
                 self.server.server_runner.imageBackgroundColorRGB = (0,0,0)
                 im = Image.open(urllib2.urlopen(commands[1]))
-                ims = []
-                duration = 0.0
-                try:
-                    while 1:
-                        im.seek(im.tell()+1)
-                        duration += float(im.info['duration'])/1000.0
-                        imo = Image.new("RGB", (16, 16), "black")
-                        pix = im.convert("RGB").load()
-                        pixo = imo.load()
-                        for x in range(8):
-                            for y in range(8):
-                                 pixo[(2*x,2*y)] = pix[(x,y)]
-                                 pixo[(2*x,2*y+1)] = pix[(x,y)]
-                                 pixo[(2*x+1,2*y)] = pix[(x,y)]
-                                 pixo[(2*x+1,2*y+1)] = pix[(x,y)]
-                        ims.append(imo)
-                except EOFError:
-                    pass
-                self.server.server_runner.images = ims
+                if ".gif" in commands[1]:
+                    ims = []
+                    duration = 0.0
+                    try:
+                        while 1:
+                            im.seek(im.tell()+1)
+                            duration += float(im.info['duration'])/1000.0
+                            imo = Image.new("RGB", (16, 16), "black")
+                            pix = im.convert("RGB").load()
+                            pixo = imo.load()
+                            for x in range(8):
+                                for y in range(8):
+                                     pixo[(2*x,2*y)] = pix[(x,y)]
+                                     pixo[(2*x,2*y+1)] = pix[(x,y)]
+                                     pixo[(2*x+1,2*y)] = pix[(x,y)]
+                                     pixo[(2*x+1,2*y+1)] = pix[(x,y)]
+                            ims.append(imo)
+                    except EOFError:
+                        pass
+                    self.server.server_runner.images = ims
+                else:
+                    self.server.server_runner.images = [im] * 2*60*4
+                    duration = 0.25
+
+
                 self.server.server_runner.pos = 16
                 self.server.server_runner.timeBeforeIdle = time.time() + (int(commands[2]) if len(commands) > 2 else 10)*duration
                 self.server.server_runner.sleeptime = min(1.0, (duration/len(ims)) if len(ims) > 0 else 0.5)
