@@ -173,41 +173,41 @@ class ServerHandler(SocketServer.BaseRequestHandler):
 
     def handle(self):
         # Receive a new connection from the outside world
-        print "[",self.__class__.__name__,"]", "Connection from {}".format(self.client_address[0]), "entering infinite loop"
+        # print "[",self.__class__.__name__,"]", "Connection from {}".format(self.client_address[0]), "entering infinite loop"
         databuffer = ""
         # Keep connection alive with an infinite loop
         while True:
             # Read some data, we assume that we will not get more than 1024 bytes per received commands
             # print "Waiting data from {}".format(self.client_address[0])
             if not '\n' in databuffer: datarecv = self.request.recv(1024)
-            print "[",self.__class__.__name__,"]", "Received from {} [{}]".format(self.client_address[0], repr(datarecv))
+            ## print "[",self.__class__.__name__,"]", "Received from {} [{}]".format(self.client_address[0], repr(datarecv))
 
             # Received data is None if the client disconnected. We go outside the loop
             if not datarecv: break
 
-            print "[",self.__class__.__name__,"]", "Appending data to [{}]".format(repr(databuffer))
+            # print "[",self.__class__.__name__,"]", "Appending data to [{}]".format(repr(databuffer))
             # We append the received data in the incomming buffer
             databuffer += datarecv
-            print "[",self.__class__.__name__,"]", "Resulting in [{}]".format(repr(databuffer))
+            # print "[",self.__class__.__name__,"]", "Resulting in [{}]".format(repr(databuffer))
 
             # Parse received data. Each commands must be separated by a '\n'
             datasplit = databuffer.split('\n', 1)
 
-            print "[",self.__class__.__name__,"]", r"Splitting with '\n': {}".format(repr(datasplit))
+            # print "[",self.__class__.__name__,"]", r"Splitting with '\n': {}".format(repr(datasplit))
 
             if len(datasplit) < 2: continue
 
             # We extract the command to treat, we keep the rest for later
             data, databuffer = datasplit[0], datasplit[1]
 
-            #print "[",self.__class__.__name__,"]", "reating"
-            print "[",self.__class__.__name__,"]", r"Data to treat {}".format(repr(data))
-            print "[",self.__class__.__name__,"]", r"Data to keep for after {}".format(repr(databuffer))
+            ## print "[",self.__class__.__name__,"]", "reating"
+            # print "[",self.__class__.__name__,"]", r"Data to treat {}".format(repr(data))
+            # print "[",self.__class__.__name__,"]", r"Data to keep for after {}".format(repr(databuffer))
 
             # Remove extra whitespaces
             data = data.strip()
 
-            # print "[",self.__class__.__name__,"]", r"Stripped {}".format(repr(data))
+            # # print "[",self.__class__.__name__,"]", r"Stripped {}".format(repr(data))
 
             # Go on next command if empty
             if data == '': continue
@@ -216,8 +216,8 @@ class ServerHandler(SocketServer.BaseRequestHandler):
             commands = data.split(" ", 1)
             command = commands[0].strip().upper()
 
-            print "[",self.__class__.__name__,"]", r"Command   {}".format(repr(command))
-            print "[",self.__class__.__name__,"]", r"Arguments {}".format(repr(commands[1:]))
+            # print "[",self.__class__.__name__,"]", r"Command   {}".format(repr(command))
+            # print "[",self.__class__.__name__,"]", r"Arguments {}".format(repr(commands[1:]))
 
             # Command dispatch
             if command == "CLEAR":
@@ -363,7 +363,7 @@ class ServerHandler(SocketServer.BaseRequestHandler):
                         self.server.server_runner.font.LoadFont(i)
                         break
         # Client has disconnected
-        print "[",self.__class__.__name__,"]", "Goodbye {}".format(self.client_address[0])
+        # print "[",self.__class__.__name__,"]", "Goodbye {}".format(self.client_address[0])
 
 
 # To make a Threaded TCP Server
@@ -506,15 +506,15 @@ class RunServer(SampleBase):
     # Run loop of the server
     def show(self):
         # Run forever
-        print "[",self.__class__.__name__,"]", "entering infinite loop"
+        # print "[",self.__class__.__name__,"]", "entering infinite loop"
         while True:
             # Wait for a certain time for each display
-            print "[",self.__class__.__name__,"]", "sleep for", self.sleeptime
+            # print "[",self.__class__.__name__,"]", "sleep for", self.sleeptime
             time.sleep(self.sleeptime)
 
             # Compute if we have to go to idle.
             if (self.timeBeforeIdle < time.time()):
-                print "[",self.__class__.__name__,"]", "Got idle, performing reset"
+                # print "[",self.__class__.__name__,"]", "Got idle, performing reset"
                 self.reset()
 
 
@@ -523,7 +523,7 @@ class RunServer(SampleBase):
 
             # Check if we are OFF
             if not self.powerState:
-                print "[",self.__class__.__name__,"]", "OFF-state style"
+                # print "[",self.__class__.__name__,"]", "OFF-state style"
                 # Clear all content
                 self.offscreen_canvas.Clear()
                 self.offscreen_canvas = self.matrix.SwapOnVSync(self.offscreen_canvas)
@@ -533,7 +533,7 @@ class RunServer(SampleBase):
 
             # Check if we are Idle, eg nothing special to display
             if (self.hour is None and self.text is None and self.images is None):
-                print "[",self.__class__.__name__,"]", "IDLE because everything is None"
+                # print "[",self.__class__.__name__,"]", "IDLE because everything is None"
                 # Reduces the brightness
                 self.matrix.brightness = min(100.0, 100.0*self.max_brightness)
                 # Draw informations of idle panel
@@ -545,7 +545,7 @@ class RunServer(SampleBase):
 
             # In order of priority: Hour -> Text -> Image
             if self.hour is not None:
-                print "[",self.__class__.__name__,"]", "HOUR"
+                # print "[",self.__class__.__name__,"]", "HOUR"
                 try:
                     # Draw hour
                     self.offscreen_canvas.Fill(self.backgroundColorRGB[0], self.backgroundColorRGB[1], self.backgroundColorRGB[2])
@@ -566,7 +566,7 @@ class RunServer(SampleBase):
                     print "Cannot draw Hour", str(e)
 
             elif self.text is not None:
-                print "[",self.__class__.__name__,"]", "TEXT"
+                # print "[",self.__class__.__name__,"]", "TEXT"
                 try:
                     # Draw text
                     self.offscreen_canvas.Fill(self.backgroundColorRGB[0], self.backgroundColorRGB[1], self.backgroundColorRGB[2])
@@ -601,7 +601,7 @@ class RunServer(SampleBase):
                     print "Cannot draw text", str(e)
 
             elif self.images is not None:
-                print "[",self.__class__.__name__,"]", "IMAGE", self.pos, "over", len(self.images)
+                # print "[",self.__class__.__name__,"]", "IMAGE", self.pos, "over", len(self.images)
                 # Get the current image
                 self.offscreen_canvas.Fill(self.imageBackgroundColorRGB[0], self.imageBackgroundColorRGB[1], self.imageBackgroundColorRGB[2])
                 im = self.images[self.pos % len(self.images)]
@@ -614,7 +614,7 @@ class RunServer(SampleBase):
                 # Next position is shifted by one on the right
                 self.pos += 1
                 if self.pos > 2000:
-                    print "[",self.__class__.__name__,"]", "Watchdog for pos to high"
+                    # print "[",self.__class__.__name__,"]", "Watchdog for pos to high"
                     self.images = None
 
             # Show prepared Canvas
