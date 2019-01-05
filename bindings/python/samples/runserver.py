@@ -235,7 +235,7 @@ class ServerHandler(SocketServer.BaseRequestHandler):
                 commands = data.split(" ")
                 self.server.server_runner.imageBackgroundColorRGB = (0,0,0)
                 im = Image.open(urllib2.urlopen(commands[1]))
-                duration = 0.05
+                duration = 0.02
                 if ".gif" in commands[1]:
                     ims = []
                     try:
