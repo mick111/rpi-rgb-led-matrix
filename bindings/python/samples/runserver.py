@@ -235,7 +235,7 @@ class ServerHandler(SocketServer.BaseRequestHandler):
                 commands = data.split(" ")
                 self.server.server_runner.imageBackgroundColorRGB = (0,0,0)
                 im = Image.open(urllib2.urlopen(commands[1]))
-                duration = 0.25
+                duration = 0.05
                 if ".gif" in commands[1]:
                     ims = []
                     try:
@@ -265,8 +265,7 @@ class ServerHandler(SocketServer.BaseRequestHandler):
                              pixo[(2*x,2*y+1)] = pix[(x,y)]
                              pixo[(2*x+1,2*y)] = pix[(x,y)]
                              pixo[(2*x+1,2*y+1)] = pix[(x,y)]
-                    # 2 seconds of images
-                    self.server.server_runner.images = [imo]*2*int(1/duration)
+                    self.server.server_runner.images = [imo]
                 self.server.server_runner.pos = 16
                 self.server.server_runner.timeBeforeIdle = time.time() + (float(commands[2]) if len(commands) > 2 else 10)
                 self.server.server_runner.sleeptime = duration
