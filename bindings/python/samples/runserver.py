@@ -254,7 +254,7 @@ class ServerHandler(SocketServer.BaseRequestHandler):
                             ims.extend([imo]*max(1,int(imduration/duration)))
                     except EOFError:
                         pass
-                    self.server.server_runner.images = ims
+                    self.server.server_runner.images = ([ims[0]]*16 + ims) if len(ims) else None
                 else:
                     imo = Image.new("RGB", (16, 16), "black")
                     pix = im.convert("RGB").load()
