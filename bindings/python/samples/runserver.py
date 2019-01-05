@@ -256,7 +256,17 @@ class ServerHandler(SocketServer.BaseRequestHandler):
                         pass
                     self.server.server_runner.images = ims
                 else:
-                    self.server.server_runner.images = [im.convert('RGB')] * 2*60*4
+                    imo = Image.new("RGB", (16, 16), "black")
+                    pix = im.convert("RGB").load()
+                    pixo = imo.load()
+                    for x in range(8):
+                        for y in range(8):
+                             pixo[(2*x,2*y)] = pix[(x,y)]
+                             pixo[(2*x,2*y+1)] = pix[(x,y)]
+                             pixo[(2*x+1,2*y)] = pix[(x,y)]
+                             pixo[(2*x+1,2*y+1)] = pix[(x,y)]
+
+                    self.server.server_runner.images = [imo] * 8*60*4
                     duration = 0.25
 
 
