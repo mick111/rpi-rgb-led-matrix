@@ -256,7 +256,7 @@ class ServerHandler(SocketServer.BaseRequestHandler):
                         pass
                     self.server.server_runner.images = ims
                 else:
-                    self.server.server_runner.images = [im] * 2*60*4
+                    self.server.server_runner.images = [im.convert('RGB')] * 2*60*4
                     duration = 0.25
 
 
