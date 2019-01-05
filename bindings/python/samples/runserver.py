@@ -235,13 +235,13 @@ class ServerHandler(SocketServer.BaseRequestHandler):
                 commands = data.split(" ")
                 self.server.server_runner.imageBackgroundColorRGB = (0,0,0)
                 im = Image.open(urllib2.urlopen(commands[1]))
+                duration = 0.25
                 if ".gif" in commands[1]:
                     ims = []
-                    duration = 0.0
                     try:
                         while 1:
                             im.seek(im.tell()+1)
-                            duration += float(im.info['duration'])/1000.0
+                            imduration = float(im.info['duration'])/1000.0
                             imo = Image.new("RGB", (16, 16), "black")
                             pix = im.convert("RGB").load()
                             pixo = imo.load()
@@ -251,7 +251,7 @@ class ServerHandler(SocketServer.BaseRequestHandler):
                                      pixo[(2*x,2*y+1)] = pix[(x,y)]
                                      pixo[(2*x+1,2*y)] = pix[(x,y)]
                                      pixo[(2*x+1,2*y+1)] = pix[(x,y)]
-                            ims.append(imo)
+                            ims.extend([imo]*max(1,int(imduration/duration)))
                     except EOFError:
                         pass
                     self.server.server_runner.images = ims
@@ -265,14 +265,11 @@ class ServerHandler(SocketServer.BaseRequestHandler):
                              pixo[(2*x,2*y+1)] = pix[(x,y)]
                              pixo[(2*x+1,2*y)] = pix[(x,y)]
                              pixo[(2*x+1,2*y+1)] = pix[(x,y)]
-
-                    self.server.server_runner.images = [imo] * 8*60*4
-                    duration = 0.25
-
-
+                    # 2 seconds of images
+                    self.server.server_runner.images = [imo]*2*int(1/duration)
                 self.server.server_runner.pos = 16
                 self.server.server_runner.timeBeforeIdle = time.time() + (int(commands[2]) if len(commands) > 2 else 10)*duration
-                self.server.server_runner.sleeptime = min(1.0, (duration/len(ims)) if len(ims) > 0 else 0.5)
+                self.server.server_runner.sleeptime = duration
             elif command == "IMAGES" and len(commands) > 1:
                 self.server.server_runner.reset()
                 self.server.server_runner.addToHistory("[" + self.client_address[0] + "] " + data)
