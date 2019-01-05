@@ -268,7 +268,7 @@ class ServerHandler(SocketServer.BaseRequestHandler):
                     # 2 seconds of images
                     self.server.server_runner.images = [imo]*2*int(1/duration)
                 self.server.server_runner.pos = 16
-                self.server.server_runner.timeBeforeIdle = time.time() + (int(commands[2]) if len(commands) > 2 else 10)*duration
+                self.server.server_runner.timeBeforeIdle = time.time() + (float(commands[2]) if len(commands) > 2 else 10)
                 self.server.server_runner.sleeptime = duration
             elif command == "IMAGES" and len(commands) > 1:
                 self.server.server_runner.reset()
