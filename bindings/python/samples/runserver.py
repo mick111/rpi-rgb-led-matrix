@@ -232,8 +232,8 @@ class ServerHandler(SocketServer.BaseRequestHandler):
             elif command == "URLGIF" and len(commands) > 1:
                 self.server.server_runner.reset()
                 self.server.server_runner.addToHistory("[" + self.client_address[0] + "] " + data)
+                self.server.server_runner.timeBeforeIdle = time.time() + (float(commands[2]) if len(commands) > 2 else 10)
                 commands = data.split(" ")
-                self.server.server_runner.imageBackgroundColorRGB = (0,0,0)
                 im = Image.open(urllib2.urlopen(commands[1]))
                 duration = 0.02
                 if ".gif" in commands[1]:
@@ -254,7 +254,11 @@ class ServerHandler(SocketServer.BaseRequestHandler):
                             ims.extend([imo]*max(1,int(imduration/duration)))
                     except EOFError:
                         pass
-                    self.server.server_runner.images = ([ims[0]]*16 + ims) if len(ims) else None
+                    if len(ims) > 0: 
+                        # first image to be shown will be the 16 % len(img) th
+                        first_img = 16 if len(ims) > 16 else (16 % len(ims))
+                        ims = ims[first_img:] + ims[:first_img] # We put the first_img last items at the begining to make it start by the first one
+                    self.server.server_runner.images = ims
                 else:
                     imo = Image.new("RGB", (16, 16), "black")
                     pix = im.convert("RGB").load()
@@ -266,8 +270,8 @@ class ServerHandler(SocketServer.BaseRequestHandler):
                              pixo[(2*x+1,2*y)] = pix[(x,y)]
                              pixo[(2*x+1,2*y+1)] = pix[(x,y)]
                     self.server.server_runner.images = [imo]
+                self.server.server_runner.imageBackgroundColorRGB = (0,0,0)
                 self.server.server_runner.pos = 16
-                self.server.server_runner.timeBeforeIdle = time.time() + (float(commands[2]) if len(commands) > 2 else 10)
                 self.server.server_runner.sleeptime = duration
             elif command == "IMAGES" and len(commands) > 1:
                 self.server.server_runner.reset()
