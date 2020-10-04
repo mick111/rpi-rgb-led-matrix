@@ -16,6 +16,7 @@ import colorsys
 import math
 import random
 import urllib2
+import datetime
 
 # Classe pour gerer la Meteo
 class Weather():
@@ -165,11 +166,37 @@ class Weather():
         return image
 
 
+def gif_to_imgs(gif_path, duration = 0.05):
+    im = Image.open(gif_path)
+    ims = []
+    try:
+        while 1:
+            im.seek(im.tell()+1)
+            imduration = float(im.info['duration'])/1000.0
+            imo = Image.new("RGB", (16, 16), "black")
+            pix = im.convert("RGB").load()
+            pixo = imo.load()
+            for x in range(8):
+                for y in range(8):
+                     pixo[(2*x,2*y)] = pix[(x,y)]
+                     pixo[(2*x,2*y+1)] = pix[(x,y)]
+                     pixo[(2*x+1,2*y)] = pix[(x,y)]
+                     pixo[(2*x+1,2*y+1)] = pix[(x,y)]
+            ims.extend([imo]*max(1,int(imduration/duration)))
+    except EOFError:
+        pass
+    if len(ims) > 0: 
+        # first image to be shown will be the 16 % len(ims) th
+        first_img = 16 if len(ims) > 16 else (16 % len(ims))
+        ims = ims[first_img:] + ims[:first_img] # We put the first_img last items at the begining to make it start by the first one
+    return ims
 
 class ServerHandler(SocketServer.BaseRequestHandler):
     # Nothing pecular to do on setup
     def setup(self):
         pass
+
+
 
     def handle(self):
         # Receive a new connection from the outside world
@@ -229,6 +256,46 @@ class ServerHandler(SocketServer.BaseRequestHandler):
                 self.server.server_runner.addToHistory("[" + self.client_address[0] + "] " + data)
                 self.server.server_runner.timeBeforeIdle = time.time() + 30
                 self.server.server_runner.hour = True
+            elif command == "EVENT" and len(commands) > 1:
+                self.server.server_runner.reset()
+                self.server.server_runner.addToHistory("[" + self.client_address[0] + "] " + data)
+
+                EVENTS = {
+                    "NOEL": { 
+                        'gifs_nums' : [1928, 2162, 94],
+                        'date': datetime.datetime(year=datetime.datetime.now().year, month=12, day=25) 
+                        },
+                    "HALLOWEEN": { 
+                        'gifs_nums': [1547, 24058], 
+                        'date': datetime.datetime(year=datetime.datetime.now().year, month=10, day=31) 
+                        },
+                    "PRIDE": { 
+                        'gifs_nums': [2100],            
+                        'date': datetime.datetime(year=datetime.datetime.now().year, month=12, day=25) 
+                        },
+                }
+                if commands[1] not in EVENTS:
+                    self.server.server_runner.addToHistory("EVENT NOT REGISTERED")
+                    pass
+                EVENT = EVENTS[commands[1]]
+
+                date = EVENT['date']
+                days_before_event = (date - datetime.datetime.now()).days
+
+
+                URL_TEMPLATE = "./lametric_caches/{}.gif"
+                urls = [URL_TEMPLATE.format(num) for num in EVENT['gifs_nums']]
+
+                ims = []
+                for url in urls:
+                    ims.extend(gif_to_imgs(url) * 5)
+
+                self.server.server_runner.timeBeforeIdle = time.time() + (float(commands[2]) if len(commands) > 2 else 10)
+                self.server.server_runner.images = ims
+                self.server.server_runner.imageBackgroundColorRGB = (0,0,0)
+                self.server.server_runner.pos = 16
+                self.server.server_runner.sleeptime = duration
+
             elif command == "URLGIF" and len(commands) > 1:
                 self.server.server_runner.reset()
                 self.server.server_runner.addToHistory("[" + self.client_address[0] + "] " + data)
@@ -238,27 +305,7 @@ class ServerHandler(SocketServer.BaseRequestHandler):
                 duration = 0.05
                 ims = None
                 if ".gif" in commands[1]:
-                    ims = []
-                    try:
-                        while 1:
-                            im.seek(im.tell()+1)
-                            imduration = float(im.info['duration'])/1000.0
-                            imo = Image.new("RGB", (16, 16), "black")
-                            pix = im.convert("RGB").load()
-                            pixo = imo.load()
-                            for x in range(8):
-                                for y in range(8):
-                                     pixo[(2*x,2*y)] = pix[(x,y)]
-                                     pixo[(2*x,2*y+1)] = pix[(x,y)]
-                                     pixo[(2*x+1,2*y)] = pix[(x,y)]
-                                     pixo[(2*x+1,2*y+1)] = pix[(x,y)]
-                            ims.extend([imo]*max(1,int(imduration/duration)))
-                    except EOFError:
-                        pass
-                    if len(ims) > 0: 
-                        # first image to be shown will be the 16 % len(ims) th
-                        first_img = 16 if len(ims) > 16 else (16 % len(ims))
-                        ims = ims[first_img:] + ims[:first_img] # We put the first_img last items at the begining to make it start by the first one
+                    ims = gif_to_imgs(commands[1], duration)
                 else:
                     imo = Image.new("RGB", (16, 16), "black")
                     pix = im.convert("RGB").load()
