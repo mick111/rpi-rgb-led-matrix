@@ -262,15 +262,15 @@ class ServerHandler(SocketServer.BaseRequestHandler):
 
                 EVENTS = {
                     "NOEL": { 
-                        'gifs_nums' : [1928, 2162, 94],
+                        'images' : ["1928.gif", "2162.gif", "94.png"],
                         'date': datetime.datetime(year=datetime.datetime.now().year, month=12, day=25) 
                         },
                     "HALLOWEEN": { 
-                        'gifs_nums': [1547, 24058], 
+                        'images': ["1547.gif", "24058.gif"], 
                         'date': datetime.datetime(year=datetime.datetime.now().year, month=10, day=31) 
                         },
                     "PRIDE": { 
-                        'gifs_nums': [2100],            
+                        'images': ["2100.png"],            
                         'date': datetime.datetime(year=datetime.datetime.now().year, month=12, day=25) 
                         },
                 }
@@ -283,12 +283,27 @@ class ServerHandler(SocketServer.BaseRequestHandler):
                 days_before_event = (date - datetime.datetime.now()).days
 
 
-                URL_TEMPLATE = "./lametric_caches/{}.gif"
-                urls = [URL_TEMPLATE.format(num) for num in EVENT['gifs_nums']]
+                URL_TEMPLATE = "./lametric_caches/{}"
+                urls = [URL_TEMPLATE.format(num) for num in EVENT['images']]
 
                 ims = []
                 for url in urls:
-                    ims.extend(gif_to_imgs(url) * 5)
+                    im = Image.open(url)
+                    duration = 0.05
+                    if ".gif" in url:
+                        ims.extend(gif_to_imgs(url) * 5)
+                    else:
+                        im = Image.open(urllib2.urlopen(commands[1]))
+                        imo = Image.new("RGB", (16, 16), "black")
+                        pix = im.convert("RGB").load()
+                        pixo = imo.load()
+                        for x in range(8):
+                            for y in range(8):
+                                 pixo[(2*x,2*y)] = pix[(x,y)]
+                                 pixo[(2*x,2*y+1)] = pix[(x,y)]
+                                 pixo[(2*x+1,2*y)] = pix[(x,y)]
+                                 pixo[(2*x+1,2*y+1)] = pix[(x,y)]
+                        ims = extend([imo] * 10)
 
                 self.server.server_runner.timeBeforeIdle = time.time() + (float(commands[2]) if len(commands) > 2 else 10)
                 self.server.server_runner.images = ims
@@ -301,12 +316,12 @@ class ServerHandler(SocketServer.BaseRequestHandler):
                 self.server.server_runner.addToHistory("[" + self.client_address[0] + "] " + data)
                 self.server.server_runner.timeBeforeIdle = time.time() + (float(commands[2]) if len(commands) > 2 else 10)
                 commands = data.split(" ")
-                im = Image.open(urllib2.urlopen(commands[1]))
                 duration = 0.05
                 ims = None
                 if ".gif" in commands[1]:
                     ims = gif_to_imgs(commands[1], duration)
                 else:
+                    im = Image.open(urllib2.urlopen(commands[1]))
                     imo = Image.new("RGB", (16, 16), "black")
                     pix = im.convert("RGB").load()
                     pixo = imo.load()
