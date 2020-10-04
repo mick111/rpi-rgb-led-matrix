@@ -480,11 +480,11 @@ class RunServer(SampleBase):
             iconSize = 8
             iconPos = 23, 7
         elif ca.width == 64:
-            timePos = 5, 11
+            timePos = 3, 11
             iconPos = 64-16, 0
             iconSize = 16
-            inTempPos  = 32,  6
-            outTempPos = 32, 15
+            inTempPos  = 30,  6
+            outTempPos = 30, 15
 
         # Print hours
         graphics.DrawText(ca, f, timePos[0]+0, timePos[1], co, hm[0:2])
