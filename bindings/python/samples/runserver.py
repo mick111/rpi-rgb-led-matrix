@@ -695,7 +695,7 @@ class RunServer(SampleBase):
                 if self.pos > 2000:
                     # print "[",self.__class__.__name__,"]", "Watchdog for pos to high"
                     self.images = None
-                if self.event_day is not None and posX > 16:
+                if self.event_day is not None and posX > 32:
                     color = graphics.Color(self.textColorRGB[0], self.textColorRGB[1], self.textColorRGB[2])
                     graphics.DrawText(self.offscreen_canvas, # Canvas destination
                                                  self.fontSmall, # Font to show
