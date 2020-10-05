@@ -275,40 +275,9 @@ class ServerHandler(SocketServer.BaseRequestHandler):
                 self.server.server_runner.addToHistory("[" + self.client_address[0] + "] " + data)
                 commands = data.split(" ")
                 if commands[1] not in EVENTS:
-                    self.server.server_runner.addToHistory("EVENT NOT REGISTERED")
+                    self.addToHistory("EVENT NOT REGISTERED")
                     pass
-                EVENT = EVENTS[commands[1]]
-
-                date = EVENT['date']
-                days_before_event = (date - datetime.datetime.now()).days
-
-                URL_TEMPLATE = "./lametric_caches/{}"
-                urls = [URL_TEMPLATE.format(num) for num in EVENT['images']]
-
-                ims = []
-                for url in urls:
-                    im = Image.open(url)
-                    duration = 0.05
-                    if ".gif" in url:
-                        ims.extend(gif_to_imgs(im) * 2)
-                    else:
-                        imo = Image.new("RGB", (16, 16), "black")
-                        pix = im.convert("RGB").load()
-                        pixo = imo.load()
-                        for x in range(8):
-                            for y in range(8):
-                                 pixo[(2*x,2*y)] = pix[(x,y)]
-                                 pixo[(2*x,2*y+1)] = pix[(x,y)]
-                                 pixo[(2*x+1,2*y)] = pix[(x,y)]
-                                 pixo[(2*x+1,2*y+1)] = pix[(x,y)]
-                        ims.extend([imo] * 50)
-
-                self.server.server_runner.timeBeforeIdle = time.time() + (float(commands[2]) if len(commands) > 2 else 10)
-                self.server.server_runner.images = ims
-                self.server.server_runner.event_day = days_before_event
-                self.server.server_runner.imageBackgroundColorRGB = (0,0,0)
-                self.server.server_runner.pos = 16
-                self.server.server_runner.sleeptime = duration
+                self.server.server_runner.showEvent(commands[1])
 
             elif command == "URLGIF" and len(commands) > 1:
                 commands = data.split(" ")
@@ -527,6 +496,41 @@ class RunServer(SampleBase):
         self.sleeptime = 0.05
         self.updateFromConfigFile()
 
+    def showEvent(self, name, timeBeforeIdle=15):
+        self.reset()
+        EVENT = EVENTS[name]
+
+        date = EVENT['date']
+        days_before_event = (date - datetime.datetime.now()).days
+
+        URL_TEMPLATE = "./lametric_caches/{}"
+        urls = [URL_TEMPLATE.format(num) for num in EVENT['images']]
+
+        ims = []
+        for url in urls:
+            im = Image.open(url)
+            duration = 0.05
+            if ".gif" in url:
+                ims.extend(gif_to_imgs(im) * 2)
+            else:
+                imo = Image.new("RGB", (16, 16), "black")
+                pix = im.convert("RGB").load()
+                pixo = imo.load()
+                for x in range(8):
+                    for y in range(8):
+                         pixo[(2*x,2*y)] = pix[(x,y)]
+                         pixo[(2*x,2*y+1)] = pix[(x,y)]
+                         pixo[(2*x+1,2*y)] = pix[(x,y)]
+                         pixo[(2*x+1,2*y+1)] = pix[(x,y)]
+                ims.extend([imo] * 50)
+
+        self.timeBeforeIdle = time.time() + timeBeforeIdle
+        self.images = ims
+        self.event_day = days_before_event
+        self.imageBackgroundColorRGB = (0,0,0)
+        self.pos = 16
+        self.sleeptime = duration
+
     def drawIdlePanel(self):
         # Idle Panel:
         co, f, f2, ca = graphics.Color(self.textColorRGB[0], self.textColorRGB[1], self.textColorRGB[2]), self.fontLittle, self.fontTiny, self.offscreen_canvas
@@ -586,6 +590,9 @@ class RunServer(SampleBase):
     def show(self):
         # Run forever
         # print "[",self.__class__.__name__,"]", "entering infinite loop"
+        last_time = time.localtime()
+        event_count = 0
+
         while True:
             # Wait for a certain time for each display
             # print "[",self.__class__.__name__,"]", "sleep for", self.sleeptime
@@ -595,7 +602,6 @@ class RunServer(SampleBase):
             if (self.timeBeforeIdle < time.time()):
                 # print "[",self.__class__.__name__,"]", "Got idle, performing reset"
                 self.reset()
-
 
             # Update data from configuration file
             self.updateFromConfigFile()
@@ -609,6 +615,15 @@ class RunServer(SampleBase):
                 # We are currently off, we are not in a hurry
                 time.sleep(1)
                 continue
+
+
+            new_time = time.localtime()
+
+            if (new_time.tm_min != last_time.tm_min):
+                events_names = EVENTS.keys()
+                event_count += 1
+                self.showEvent(events_names[event_count])
+            last_time = new_time
 
             # Check if we are Idle, eg nothing special to display
             if (self.hour is None and self.text is None and self.images is None):
