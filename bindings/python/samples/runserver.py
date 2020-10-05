@@ -619,7 +619,7 @@ class RunServer(SampleBase):
 
             new_time = time.localtime()
 
-            if (new_time.tm_min != last_time.tm_min and new_time.tm_min == 15):
+            if (new_time.tm_min != last_time.tm_min and (new_time.tm_min % 5 == 0)):
                 events_names = EVENTS.keys()
                 event_count += 1
                 self.showEvent(events_names[event_count % len(events_names)])
