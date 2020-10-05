@@ -275,6 +275,7 @@ class ServerHandler(SocketServer.BaseRequestHandler):
                         },
                 }
                 if commands[1] not in EVENTS:
+                    print(repr(commands))
                     self.server.server_runner.addToHistory("EVENT NOT REGISTERED")
                     pass
                 EVENT = EVENTS[commands[1]]
