@@ -259,6 +259,7 @@ class ServerHandler(SocketServer.BaseRequestHandler):
             elif command == "EVENT" and len(commands) > 1:
                 self.server.server_runner.reset()
                 self.server.server_runner.addToHistory("[" + self.client_address[0] + "] " + data)
+                commands = data.split(" ")
 
                 EVENTS = {
                     "NOEL": { 
@@ -314,10 +315,10 @@ class ServerHandler(SocketServer.BaseRequestHandler):
                 self.server.server_runner.sleeptime = duration
 
             elif command == "URLGIF" and len(commands) > 1:
+                commands = data.split(" ")
                 self.server.server_runner.reset()
                 self.server.server_runner.addToHistory("[" + self.client_address[0] + "] " + data)
                 self.server.server_runner.timeBeforeIdle = time.time() + (float(commands[2]) if len(commands) > 2 else 10)
-                commands = data.split(" ")
                 duration = 0.05
                 ims = None
                 if ".gif" in commands[1]:
