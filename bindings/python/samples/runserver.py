@@ -190,6 +190,21 @@ def gif_to_imgs(im, duration = 0.05):
         ims = ims[first_img:] + ims[:first_img] # We put the first_img last items at the begining to make it start by the first one
     return ims
 
+EVENTS = {
+    "NOEL": { 
+        'images' : ["1928.gif", "2162.gif", "94.png"],
+        'date': datetime.datetime(year=datetime.datetime.now().year, month=12, day=25) 
+        },
+    "HALLOWEEN": { 
+        'images': ["1547.gif", "24058.gif"], 
+        'date': datetime.datetime(year=datetime.datetime.now().year, month=10, day=31) 
+        },
+    "PRIDE": { 
+        'images': ["2100.png"],            
+        'date': datetime.datetime(year=datetime.datetime.now().year, month=12, day=25) 
+        },
+}
+
 class ServerHandler(SocketServer.BaseRequestHandler):
     # Nothing pecular to do on setup
     def setup(self):
@@ -259,21 +274,6 @@ class ServerHandler(SocketServer.BaseRequestHandler):
                 self.server.server_runner.reset()
                 self.server.server_runner.addToHistory("[" + self.client_address[0] + "] " + data)
                 commands = data.split(" ")
-
-                EVENTS = {
-                    "NOEL": { 
-                        'images' : ["1928.gif", "2162.gif", "94.png"],
-                        'date': datetime.datetime(year=datetime.datetime.now().year, month=12, day=25) 
-                        },
-                    "HALLOWEEN": { 
-                        'images': ["1547.gif", "24058.gif"], 
-                        'date': datetime.datetime(year=datetime.datetime.now().year, month=10, day=31) 
-                        },
-                    "PRIDE": { 
-                        'images': ["2100.png"],            
-                        'date': datetime.datetime(year=datetime.datetime.now().year, month=12, day=25) 
-                        },
-                }
                 if commands[1] not in EVENTS:
                     self.server.server_runner.addToHistory("EVENT NOT REGISTERED")
                     pass
@@ -281,7 +281,6 @@ class ServerHandler(SocketServer.BaseRequestHandler):
 
                 date = EVENT['date']
                 days_before_event = (date - datetime.datetime.now()).days
-
 
                 URL_TEMPLATE = "./lametric_caches/{}"
                 urls = [URL_TEMPLATE.format(num) for num in EVENT['images']]
@@ -291,7 +290,7 @@ class ServerHandler(SocketServer.BaseRequestHandler):
                     im = Image.open(url)
                     duration = 0.05
                     if ".gif" in url:
-                        ims.extend(gif_to_imgs(im) * 5)
+                        ims.extend(gif_to_imgs(im) * 2)
                     else:
                         imo = Image.new("RGB", (16, 16), "black")
                         pix = im.convert("RGB").load()
