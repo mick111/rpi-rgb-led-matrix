@@ -201,7 +201,7 @@ EVENTS = {
         },
     "PRIDE": { 
         'images': ["2100.png"],            
-        'date': datetime.datetime(year=datetime.datetime.now().year, month=12, day=25) 
+        'date': datetime.datetime(year=datetime.datetime.now().year, month=11, day=7) 
         },
 }
 
@@ -695,13 +695,13 @@ class RunServer(SampleBase):
                 if self.pos > 2000:
                     # print "[",self.__class__.__name__,"]", "Watchdog for pos to high"
                     self.images = None
-                if self.event_day is not None and self.pos > 16:
+                if self.event_day is not None and posX > 16:
                     color = graphics.Color(self.textColorRGB[0], self.textColorRGB[1], self.textColorRGB[2])
                     graphics.DrawText(self.offscreen_canvas, # Canvas destination
                                                  self.fontSmall, # Font to show
-                                                 1, 12,          # Position
+                                                 5, 12,          # Position
                                                  color,          # Color
-                                                 "J-{:03d}".format(self.event_day)) # Data to draw
+                                                 "J-{:3d}".format(self.event_day)) # Data to draw
 
 
             # Show prepared Canvas
