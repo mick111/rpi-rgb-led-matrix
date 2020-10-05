@@ -699,9 +699,9 @@ class RunServer(SampleBase):
                     color = graphics.Color(self.textColorRGB[0], self.textColorRGB[1], self.textColorRGB[2])
                     graphics.DrawText(self.offscreen_canvas, # Canvas destination
                                                  self.fontSmall, # Font to show
-                                                 5, 12,          # Position
+                                                 10 if event_day < 100 else 5, 12, # Position
                                                  color,          # Color
-                                                 "J-{:3d}".format(self.event_day)) # Data to draw
+                                                 "J-{:d}".format(self.event_day)) # Data to draw
 
 
             # Show prepared Canvas
