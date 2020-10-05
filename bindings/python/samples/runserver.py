@@ -307,6 +307,7 @@ class ServerHandler(SocketServer.BaseRequestHandler):
 
                 self.server.server_runner.timeBeforeIdle = time.time() + (float(commands[2]) if len(commands) > 2 else 10)
                 self.server.server_runner.images = ims
+                self.server.server_runner.event_day = days_before_event
                 self.server.server_runner.imageBackgroundColorRGB = (0,0,0)
                 self.server.server_runner.pos = 16
                 self.server.server_runner.sleeptime = duration
@@ -522,6 +523,7 @@ class RunServer(SampleBase):
     def reset(self):
         self.text = None
         self.images = None
+        self.event_day = None
         self.hour = None
         self.pos = 0
         self.sleeptime = 0.05
@@ -695,6 +697,14 @@ class RunServer(SampleBase):
                 if self.pos > 2000:
                     # print "[",self.__class__.__name__,"]", "Watchdog for pos to high"
                     self.images = None
+                if self.event_day is not None:
+                    color = graphics.Color(self.textColorRGB[0], self.textColorRGB[1], self.textColorRGB[2])
+                    graphics.DrawText(self.offscreen_canvas, # Canvas destination
+                                                 self.font,             # Font to show
+                                                 1, 12,          # Position
+                                                 color,                 # Color
+                                                 "J-{}".format(self.event_day)) # Data to draw
+
 
             # Show prepared Canvas
             self.offscreen_canvas = self.matrix.SwapOnVSync(self.offscreen_canvas)
