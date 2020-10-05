@@ -166,8 +166,7 @@ class Weather():
         return image
 
 
-def gif_to_imgs(gif_path, duration = 0.05):
-    im = Image.open(gif_path)
+def gif_to_imgs(im, duration = 0.05):
     ims = []
     try:
         while 1:
@@ -276,7 +275,6 @@ class ServerHandler(SocketServer.BaseRequestHandler):
                         },
                 }
                 if commands[1] not in EVENTS:
-                    print(repr(commands))
                     self.server.server_runner.addToHistory("EVENT NOT REGISTERED")
                     pass
                 EVENT = EVENTS[commands[1]]
@@ -293,9 +291,8 @@ class ServerHandler(SocketServer.BaseRequestHandler):
                     im = Image.open(url)
                     duration = 0.05
                     if ".gif" in url:
-                        ims.extend(gif_to_imgs(url) * 5)
+                        ims.extend(gif_to_imgs(im) * 5)
                     else:
-                        im = Image.open(urllib2.urlopen(commands[1]))
                         imo = Image.new("RGB", (16, 16), "black")
                         pix = im.convert("RGB").load()
                         pixo = imo.load()
