@@ -301,7 +301,7 @@ class ServerHandler(SocketServer.BaseRequestHandler):
                                  pixo[(2*x,2*y+1)] = pix[(x,y)]
                                  pixo[(2*x+1,2*y)] = pix[(x,y)]
                                  pixo[(2*x+1,2*y+1)] = pix[(x,y)]
-                        ims.extend([imo] * 100)
+                        ims.extend([imo] * 50)
 
                 self.server.server_runner.timeBeforeIdle = time.time() + (float(commands[2]) if len(commands) > 2 else 10)
                 self.server.server_runner.images = ims
