@@ -196,7 +196,7 @@ EVENTS = {
         'date': datetime.datetime(year=datetime.datetime.now().year, month=12, day=25) 
         },
     "HALLOWEEN": { 
-        'images': ["1547.gif", "24058.gif"], 
+        'images': ["1547.gif", "24058.gif", "2772.gif"], 
         'date': datetime.datetime(year=datetime.datetime.now().year, month=10, day=31) 
         },
     "PRIDE": { 
