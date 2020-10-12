@@ -583,6 +583,7 @@ if __name__ == "__main__":
         "--led-gpio-mapping",
         help="Hardware Mapping: regular, adafruit-hat, adafruit-hat-pwm, mick111",
         choices=["regular", "adafruit-hat", "adafruit-hat-pwm", "mick111"],
+        default="mick111",
         type=str,
     )
     parser.add_argument(
