@@ -1,15 +1,44 @@
-#!/usr/bin/env python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-import SocketServer
+import socketserver
+import glob
+import time
+import urllib2
+from PIL import Image
 
 # To create a Threaded TCP Server for each connexion
-class ThreadedTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
+class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
     pass
 
+def gif_to_imgs(im, duration=0.05):
+    ims = []
+    try:
+        while 1:
+            im.seek(im.tell() + 1)
+            imduration = float(im.info["duration"]) / 1000.0
+            imo = Image.new("RGB", (16, 16), "black")
+            pix = im.convert("RGB").load()
+            pixo = imo.load()
+            for x in range(8):
+                for y in range(8):
+                    pixo[(2 * x, 2 * y)] = pix[(x, y)]
+                    pixo[(2 * x, 2 * y + 1)] = pix[(x, y)]
+                    pixo[(2 * x + 1, 2 * y)] = pix[(x, y)]
+                    pixo[(2 * x + 1, 2 * y + 1)] = pix[(x, y)]
+            ims.extend([imo] * max(1, int(imduration / duration)))
+    except EOFError:
+        pass
+    if len(ims) > 0:
+        # first image to be shown will be the 16 % len(ims) th
+        first_img = 16 if len(ims) > 16 else (16 % len(ims))
+        ims = (
+            ims[first_img:] + ims[:first_img]
+        )  # We put the first_img last items at the begining to make it start by the first one
+    return ims
 
 # To create the handler for the server
-class ServerHandler(SocketServer.BaseRequestHandler):
+class ServerHandler(socketserver.BaseRequestHandler):
     # Nothing pecular to do on setup
     def setup(self):
         pass
@@ -45,7 +74,7 @@ class ServerHandler(SocketServer.BaseRequestHandler):
         while True:
             # Read some data, and collect it in the databuffer
             # If there is a '\n' in the databuffer, then it contains a command to treat
-            if not "\n" in databuffer:
+            if "\n" not in databuffer:
                 # Wait for some data
                 datarecv = self.request.recv(1024)
                 # Received data is None if the client disconnected.
@@ -179,7 +208,7 @@ class ServerHandler(SocketServer.BaseRequestHandler):
                         0, min(float(commands[1]) / 100.0, 1.0)
                     )
                     self.server.server_runner.updateToConfigFile()
-                except:
+                except Exception:
                     pass
             elif command == "POWERSTATE?":
                 self.server.server_runner.updateFromConfigFile()
@@ -191,7 +220,7 @@ class ServerHandler(SocketServer.BaseRequestHandler):
                     self.server.server_runner.powerState = (
                         1 - self.server.server_runner.powerState
                     )
-                except:
+                except Exception:
                     pass
                 self.server.server_runner.updateToConfigFile()
             elif (command == "POWERSTATE") and len(commands) > 1:
@@ -199,7 +228,7 @@ class ServerHandler(SocketServer.BaseRequestHandler):
                     self.server.server_runner.powerState = commands[
                         1
                     ].strip().upper() in ["ON", "1", "TRUE", "YES"]
-                except:
+                except Exception:
                     pass
                 self.server.server_runner.updateToConfigFile()
             elif command == "COLOR?":
