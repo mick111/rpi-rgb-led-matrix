@@ -11,6 +11,7 @@ from PIL import Image
 class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
     pass
 
+
 def gif_to_imgs(im, duration=0.05):
     ims = []
     try:
@@ -36,6 +37,7 @@ def gif_to_imgs(im, duration=0.05):
             ims[first_img:] + ims[:first_img]
         )  # We put the first_img last items at the begining to make it start by the first one
     return ims
+
 
 # To create the handler for the server
 class ServerHandler(socketserver.BaseRequestHandler):
