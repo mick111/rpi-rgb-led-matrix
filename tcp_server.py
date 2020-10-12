@@ -99,7 +99,7 @@ class ServerHandler(socketserver.BaseRequestHandler):
                 if not datarecv:
                     break
                 # We append the received data in the buffer
-                databuffer += datarecv
+                databuffer += datarecv.decode('utf-8')
 
             # Parse received data. Commands must be ended by '\n'
             datasplit = databuffer.split("\n", 1)
