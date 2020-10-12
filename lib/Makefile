@@ -4,9 +4,20 @@
 #   -lrgbmatrix
 ##
 OBJECTS=gpio.o led-matrix.o options-initialize.o framebuffer.o \
-        thread.o bdf-font.o graphics.o transformer.o led-matrix-c.o \
-	hardware-mapping.o
+        thread.o bdf-font.o graphics.o led-matrix-c.o hardware-mapping.o \
+        pixel-mapper.o multiplex-mappers.o \
+	content-streamer.o
+
 TARGET=librgbmatrix
+
+###
+# After you change any of the following DEFINES, make sure to 'make' again.
+#
+# ###########      NOTE     ###########
+# all of these options can now can be set programmatically and
+# via command line flags as well. No real need to change them in the Makefile.
+# (So be prepared for these to be removed at some point)
+###
 
 # There are several different pinouts for various breakout boards that uses
 # this library. If you are using the described pinout in the toplevel README.md
@@ -25,24 +36,10 @@ TARGET=librgbmatrix
 #   classic-pi1        # (deprecated) Classic pinout on Rasperry Pi 1
 HARDWARE_DESC?=regular
 
-###
-# After you change any of the following DEFINES, make sure to 'make' again.
-#
-# Note, all of these options can now can be set programmatically and
-# via command line flags as well. No real need to change them in the Makefile.
-# (So be prepared for these to be removed at some point)
-###
-
 # If you see that your display is inverse, you might have a matrix variant
 # has uses inverse logic for the RGB bits. In that case: uncomment this.
 # Flag: --led-inverse
 #DEFINES+=-DINVERSE_RGB_DISPLAY_COLORS
-
-# Some panels out there seem to have Green and Blue swapped (even though the
-# writing on connector looks correct). This option will swap these colors if
-# you happen to have gotten such panel.
-# Flag: --led-swap-green-blue
-#DEFINES+=-DRGB_SWAP_GREEN_BLUE
 
 # For curiosity reasons and while tweaking values for LSB_PWM_NANOSECONDS,
 # uncomment to see refresh rate in terminal.
@@ -100,6 +97,46 @@ HARDWARE_DESC?=regular
 # Flag: --led-no-hardware-pulses
 #DEFINES+=-DDISABLE_HARDWARE_PULSES
 
+# This allows to fix the refresh rate to a particular refresh time in
+# microseconds.
+#
+# This can be used to mitigate some situations in which you have a rare
+# faint flicker, which can happen due to hardware events (network access)
+# or other situations such as other IO or heavy memory access by other
+# processes (all of which seem to break the isolation we request from the
+# kernel. You did set isolcpus=3 right ?)
+# You trade a slightly slower refresh rate and display brightness for less
+# visible flicker situations.
+#
+# For this to calibrate, run your program for a while with --led-show-refresh
+# and watch the line that shows the refresh time and the maximum microseconds
+# for a frame observed. The maximum number is updated whenever the frame
+# refresh take a little bit longer. So wait a while until that value doesn't
+# change anymore (at least a minute, so that you catch tasks that happen once
+# a minute). Some value might read e.g.
+#   204.6Hz max: 5133usec
+# Now take this maximum value you see there (here: 5133) and put in
+# this define (don't forget to remove the # in front).
+#
+# The refresh rate will now be adapted to always have this amount of time
+# between frames, so faster refreshes will be slowed down, but the occasional
+# delayed frame will fit into the time-window as well, thus reducing visible
+# brightness fluctuations.
+#
+# You can play with value a little and reduce until you find a good balance
+# between refresh rate (which is reduce the higher this value is) and
+# flicker suppression (which is better with higher values).
+# Flag: --led-limit-refresh
+#DEFINES+=-DFIXED_FRAME_MICROSECONDS=5000
+
+# Enable wide 64 bit GPIO offered with the compute module.
+# This will use more memory to internally represent the frame buffer, so
+# caches can't be utilized as much.
+# So only switch this on if you really use the compute module and use more
+# than 3 parallel chains.
+# (this is untested right now, waiting for hardware to arrive for testing)
+#DEFINES+=-DENABLE_WIDE_GPIO_COMPUTE_MODULE
+
 # ---- Pinout options for hardware variants; usually no change needed here ----
 
 # Uncomment if you want to use the Adafruit HAT with stable PWM timings.
@@ -128,8 +165,8 @@ DEFINES+=$(USER_DEFINES)
 
 DEFINES+=-DDEFAULT_HARDWARE='"$(HARDWARE_DESC)"'
 INCDIR=../include
-CFLAGS=-Wall -O3 -g -fPIC $(DEFINES)
-CXXFLAGS=$(CFLAGS)
+CFLAGS=-W -Wall -Wextra -Wno-unused-parameter -O3 -g -fPIC $(DEFINES)
+CXXFLAGS=$(CFLAGS) -fno-exceptions -std=c++11
 
 all : $(TARGET).a $(TARGET).so.1
 

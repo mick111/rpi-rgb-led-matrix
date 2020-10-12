@@ -51,62 +51,145 @@ For reference, this is how the numbering on the Raspberry Pi looks like:
 This is the same representation used in the table below, which helps for
 visual inspection.
 
+### Chains
+
+You connect the Pi to the input of the first in the chain of panels.
+Each panel has an output connector, that you then can connect to the
+next panel in that chain.
+
+The IO and library supports to run up to three chains in parallel.
+
+Thus you can create a larger panel. Here a schematic view, below in the
+'Power' section, you can see a real-live panel with three chains of 5 panels each seen from the back.
+
+![Coordinate overview][coordinates]
+
 ### Wiring diagram
 
+You find the positions of the pins on the Raspberry Pi and the corresponding
+logical connections in the table below (there are more GND pins on the
+Raspberry Pi, but they are left out for simplicity).
+
+#### Shared connections
 For each of the up to three chains, you have to connect `GND`, `strobe`,
-`clock`, `OE-`, `A`, `B`, `C`, `D` to all of these (the `D` line is needed
-for 32x32 displays; 32x16 displays don't need it); you find the positions
-below (there are more GND pins on the Raspberry Pi, but they are left out
-for simplicity).
+`clock`, `OE-`, `A`, `B`, `C`, `D` to **all** of these (the `D` line is needed
+for 32x32 displays; 32x16 displays don't need it).
 
-Then for each panel, there is a set of (R1, G1, B1, R2, G2, B2) that you have
-to connect to the corresponding pins that are marked `[1]`, `[2]` and `[3]` for
-chain 1, 2, and 3 below.
-If you only connect one panel or have one chain, connect it to `[1]` (:smile:); if you
-use parallel chains, add the other `[2]` and `[3]`.
+If you have a 64x64 display, these have an additional `E` line which is
+typically on Pin 4 or 8 on the matrix connector.
 
-To make things quicker to navigate visually, each chain is marked with a separate
-icon:
+For these pins, all chains receive the same data line, e.g. if you have three
+chains, you have to wire the `A` output on the Pi with three wires to the
+three chain inputs of the `A` input.
+
+#### Connections per chain
+Then for each first panel of a chain there is a set of
+(R1, G1, B1, R2, G2, B2) that you have to connect to the corresponding pins.
+They are marked `[1]`, `[2]` and `[3]` for chain 1, 2, and 3 below.
+
+If you only connect one panel or have one chain, connect it to
+`[1]` (:smile:); if you use parallel chains, add the other `[2]` and `[3]`.
+
+To make things quicker to navigate visually, each chain is marked with a
+separate icon:
 
 `[1]`=:smile:, `[2]`=:boom: and `[3]`=:droplet: ; signals that go to all
 chains have all icons.
 
-Connection                        | Pin | Pin |  Connection
----------------------------------:|:---:|:---:|:-----------------------------
-                             -    |   1 |   2 | -
-             :droplet: **[3] G1** |   3 |   4 | -
-             :droplet: **[3] B1** |   5 |   6 | **GND** :smile::boom::droplet:
-:smile::boom::droplet: **strobe** |   7 |   8 | **[3] R1** :droplet:
-                              -   |   9 |  10 | **E**    :smile::boom::droplet: (for 64 row matrix, 1:32)
-:smile::boom::droplet: **clock**  |  11 |  12 | **OE-**  :smile::boom::droplet:
-              :smile:  **[1] G1** |  13 |  14 | -
-:smile::boom::droplet:      **A** |  15 |  16 | **B**    :smile::boom::droplet:
-                             -    |  17 |  18 | **C**    :smile::boom::droplet:
-              :smile:  **[1] B2** |  19 |  20 | -
-              :smile:  **[1] G2** |  21 |  22 | **D**    :smile::boom::droplet: (for 32 row matrix, 1:16)
-              :smile:  **[1] R1** |  23 |  24 | **[1] R2** :smile:
-                             -    |  25 |  26 | **[1] B1** :smile:
-                             -    |  27 |  28 | -
-              :boom:   **[2] G1** |  29 |  30 | -
-              :boom:   **[2] B1** |  31 |  32 | **[2] R1** :boom:
-              :boom:   **[2] G2** |  33 |  34 | -
-              :boom:   **[2] R2** |  35 |  36 | **[3] G2** :droplet:
-              :droplet:**[3] R2** |  37 |  38 | **[2] B2** :boom:
-                              -   |  39 |  40 | **[3] B2** :droplet:
+|Connection                        | Pin | Pin |  Connection
+|---------------------------------:|:---:|:---:|:-----------------------------
+|                             -    |   1 |   2 | -
+|             :droplet: **[3] G1** |   3 |   4 | -
+|             :droplet: **[3] B1** |   5 |   6 | **GND** :smile::boom::droplet:
+|:smile::boom::droplet: **strobe** |   7 |   8 | **[3] R1** :droplet:
+|                              -   |   9 |  10 | **E**    :smile::boom::droplet: (for 64 row matrix, 1:32)
+|:smile::boom::droplet: **clock**  |  11 |  12 | **OE-**  :smile::boom::droplet:
+|              :smile:  **[1] G1** |  13 |  14 | -
+|:smile::boom::droplet:      **A** |  15 |  16 | **B**    :smile::boom::droplet:
+|                             -    |  17 |  18 | **C**    :smile::boom::droplet:
+|              :smile:  **[1] B2** |  19 |  20 | -
+|              :smile:  **[1] G2** |  21 |  22 | **D**    :smile::boom::droplet: (for 32 row matrix, 1:16)
+|              :smile:  **[1] R1** |  23 |  24 | **[1] R2** :smile:
+|                             -    |  25 |  26 | **[1] B1** :smile:
+|                             -    |  27 |  28 | -
+|              :boom:   **[2] G1** |  29 |  30 | -
+|              :boom:   **[2] B1** |  31 |  32 | **[2] R1** :boom:
+|              :boom:   **[2] G2** |  33 |  34 | -
+|              :boom:   **[2] R2** |  35 |  36 | **[3] G2** :droplet:
+|              :droplet:**[3] R2** |  37 |  38 | **[2] B2** :boom:
+|                              -   |  39 |  40 | **[3] B2** :droplet:
 
 In the [adapter/](./adapter) directory, there are some boards that make
 the wiring task simpler.
 
 <a href="adapter/"><img src="img/three-parallel-panels-soic.jpg" width="300px"></a>
 
-### Chains
+### Alternative Hardware Mappings
 
-You connect the Pi to the first element in the chain of panels. Each panel has
-an output connector, that you then can connect to the next panel. Thus you can
-create a larger panel. Here a schematic view, below in the 'Power' section, you
-can see a real-live panel with three chains of 5 panels each seen from the back.
+The hardware mapping described above is the 'regular' hardware mapping, which
+is the default for this library. However, there are alternative hardware
+mappings to choose from, e.g. Adafruit sells a board where they choose a
+different mapping.
+You can choose with the `--led-gpio-mapping` flag.
 
-![Coordinate overview][coordinates]
+If you got an adapter board that is from some unknown source and you don't
+get any output: double check the GPIO mappings they use.
+
+You have relative freedom to assign any pins to the output of your choosing,
+just add a new mapping in [lib/hardware-mapping.c](lib/hardware-mapping.c),
+recompile and it will be provided as a new option in `--led-gpio-mapping`.
+
+<details><summary>Table: GPIO-pins for each hardware mapping</summary>
+
+|         | regular | adafruit-hat | adafruit-hat-pwm | regular-pi1 | classic | classic-pi1 | compute-module |
+----------|---------|--------------|------------------|-------------|---------|-------------|----------------|
+Parallel chains|        3|             1|                 1|            1|        3|            1|               6|
+~OE       |GPIO 18  |GPIO 4        |GPIO 18           |GPIO 18      |GPIO 27  |GPIO 0       |GPIO 18         |
+Clock     |GPIO 17  |GPIO 17       |GPIO 17           |GPIO 17      |GPIO 11  |GPIO 1       |GPIO 16         |
+Strobe    |GPIO 4   |GPIO 21       |GPIO 21           |GPIO 4       |GPIO 4   |GPIO 4       |GPIO 17         |
+A         |GPIO 22  |GPIO 22       |GPIO 22           |GPIO 22      |GPIO 7   |GPIO 7       |GPIO 2          |
+B         |GPIO 23  |GPIO 26       |GPIO 26           |GPIO 23      |GPIO 8   |GPIO 8       |GPIO 3          |
+C         |GPIO 24  |GPIO 27       |GPIO 27           |GPIO 24      |GPIO 9   |GPIO 9       |GPIO 4          |
+D         |GPIO 25  |GPIO 20       |GPIO 20           |GPIO 25      |GPIO 10  |GPIO 10      |GPIO 5          |
+E         |GPIO 15  |GPIO 24       |GPIO 24           |GPIO 15      |        -|            -|GPIO 6          |
+Chain 1/R1|GPIO 11  |GPIO 5        |GPIO 5            |GPIO 11      |GPIO 17  |GPIO 17      |GPIO 7          |
+Chain 1/G1|GPIO 27  |GPIO 13       |GPIO 13           |GPIO 21      |GPIO 18  |GPIO 18      |GPIO 8          |
+Chain 1/B1|GPIO 7   |GPIO 6        |GPIO 6            |GPIO 7       |GPIO 22  |GPIO 22      |GPIO 9          |
+Chain 1/R2|GPIO 8   |GPIO 12       |GPIO 12           |GPIO 8       |GPIO 23  |GPIO 23      |GPIO 10         |
+Chain 1/G2|GPIO 9   |GPIO 16       |GPIO 16           |GPIO 9       |GPIO 24  |GPIO 24      |GPIO 11         |
+Chain 1/B2|GPIO 10  |GPIO 23       |GPIO 23           |GPIO 10      |GPIO 25  |GPIO 25      |GPIO 12         |
+Chain 2/R1|GPIO 12  |             -|                 -|            -|GPIO 12  |            -|GPIO 13         |
+Chain 2/G1|GPIO 5   |             -|                 -|            -|GPIO 5   |            -|GPIO 14         |
+Chain 2/B1|GPIO 6   |             -|                 -|            -|GPIO 6   |            -|GPIO 15         |
+Chain 2/R2|GPIO 19  |             -|                 -|            -|GPIO 19  |            -|GPIO 19         |
+Chain 2/G2|GPIO 13  |             -|                 -|            -|GPIO 13  |            -|GPIO 20         |
+Chain 2/B2|GPIO 20  |             -|                 -|            -|GPIO 20  |            -|GPIO 21         |
+Chain 3/R1|GPIO 14  |             -|                 -|            -|GPIO 14  |            -|GPIO 22         |
+Chain 3/G1|GPIO 2   |             -|                 -|            -|GPIO 2   |            -|GPIO 23         |
+Chain 3/B1|GPIO 3   |             -|                 -|            -|GPIO 3   |            -|GPIO 24         |
+Chain 3/R2|GPIO 26  |             -|                 -|            -|GPIO 15  |            -|GPIO 25         |
+Chain 3/G2|GPIO 16  |             -|                 -|            -|GPIO 26  |            -|GPIO 26         |
+Chain 3/B2|GPIO 21  |             -|                 -|            -|GPIO 21  |            -|GPIO 27         |
+Chain 4/R1|        -|             -|                 -|            -|        -|            -|GPIO 28         |
+Chain 4/G1|        -|             -|                 -|            -|        -|            -|GPIO 29         |
+Chain 4/B1|        -|             -|                 -|            -|        -|            -|GPIO 30         |
+Chain 4/R2|        -|             -|                 -|            -|        -|            -|GPIO 31         |
+Chain 4/G2|        -|             -|                 -|            -|        -|            -|GPIO 32         |
+Chain 4/B2|        -|             -|                 -|            -|        -|            -|GPIO 33         |
+Chain 5/R1|        -|             -|                 -|            -|        -|            -|GPIO 34         |
+Chain 5/G1|        -|             -|                 -|            -|        -|            -|GPIO 35         |
+Chain 5/B1|        -|             -|                 -|            -|        -|            -|GPIO 36         |
+Chain 5/R2|        -|             -|                 -|            -|        -|            -|GPIO 37         |
+Chain 5/G2|        -|             -|                 -|            -|        -|            -|GPIO 38         |
+Chain 5/B2|        -|             -|                 -|            -|        -|            -|GPIO 39         |
+Chain 6/R1|        -|             -|                 -|            -|        -|            -|GPIO 40         |
+Chain 6/G1|        -|             -|                 -|            -|        -|            -|GPIO 41         |
+Chain 6/B1|        -|             -|                 -|            -|        -|            -|GPIO 42         |
+Chain 6/R2|        -|             -|                 -|            -|        -|            -|GPIO 43         |
+Chain 6/G2|        -|             -|                 -|            -|        -|            -|GPIO 44         |
+Chain 6/B2|        -|             -|                 -|            -|        -|            -|GPIO 45         |
+
+</details>
 
 
 A word about power
