@@ -1,11 +1,12 @@
-'''
+"""
     Based on gen_gerber_and_drill_files_board.py in kicad/demos directory.
-'''
+"""
 
 import sys
 
 from pcbnew import *
-filename=sys.argv[1]
+
+filename = sys.argv[1]
 
 board = LoadBoard(filename)
 
@@ -26,7 +27,7 @@ popt.SetScale(1)
 popt.SetMirror(False)
 popt.SetUseGerberAttributes(True)
 popt.SetUseGerberProtelExtensions(True)
-popt.SetExcludeEdgeLayer(True);
+popt.SetExcludeEdgeLayer(True)
 popt.SetScale(1)
 popt.SetUseAuxOrigin(True)
 
@@ -41,17 +42,15 @@ popt.SetSubtractMaskFromSilk(False)
 #   gerbv *
 # just makes sense.
 plot_plan = [
-    ( Edge_Cuts, "0-Edge_Cuts",   "Edges" ),
-
-    ( F_Paste,   "1-PasteTop",    "Paste top" ),
-    ( F_SilkS,   "2-SilkTop",     "Silk top" ),
-    ( F_Mask,    "3-MaskTop",     "Mask top" ),
-    ( F_Cu,      "4-CuTop",       "Top layer" ),
-
-    ( B_Cu,      "5-CuBottom",    "Bottom layer" ),
-    ( B_Mask,    "6-MaskBottom",  "Mask bottom" ),
-    ( B_SilkS,   "7-SilkBottom",  "Silk top" ),
-    ( B_Paste,   "8-PasteBottom", "Paste Bottom" ),
+    (Edge_Cuts, "0-Edge_Cuts", "Edges"),
+    (F_Paste, "1-PasteTop", "Paste top"),
+    (F_SilkS, "2-SilkTop", "Silk top"),
+    (F_Mask, "3-MaskTop", "Mask top"),
+    (F_Cu, "4-CuTop", "Top layer"),
+    (B_Cu, "5-CuBottom", "Bottom layer"),
+    (B_Mask, "6-MaskBottom", "Mask bottom"),
+    (B_SilkS, "7-SilkBottom", "Silk top"),
+    (B_Paste, "8-PasteBottom", "Paste Bottom"),
 ]
 
 
@@ -66,18 +65,18 @@ pctl.ClosePlot()
 
 # Fabricators need drill files.
 # sometimes a drill map file is asked (for verification purpose)
-drlwriter = EXCELLON_WRITER( board )
-drlwriter.SetMapFileFormat( PLOT_FORMAT_PDF )
+drlwriter = EXCELLON_WRITER(board)
+drlwriter.SetMapFileFormat(PLOT_FORMAT_PDF)
 
 mirror = False
 minimalHeader = False
-offset = wxPoint(0,0)
+offset = wxPoint(0, 0)
 mergeNPTH = True
-drlwriter.SetOptions( mirror, minimalHeader, offset, mergeNPTH )
+drlwriter.SetOptions(mirror, minimalHeader, offset, mergeNPTH)
 
 metricFmt = True
-drlwriter.SetFormat( metricFmt )
+drlwriter.SetFormat(metricFmt)
 
 genDrl = True
 genMap = True
-drlwriter.CreateDrillandMapFilesSet( plotDir, genDrl, genMap );
+drlwriter.CreateDrillandMapFilesSet(plotDir, genDrl, genMap)

@@ -10,7 +10,7 @@ class RotatingBlockGenerator(SampleBase):
     def rotate(self, x, y, angle):
         return {
             "new_x": x * math.cos(angle) - y * math.sin(angle),
-            "new_y": x * math.sin(angle) + y * math.cos(angle)
+            "new_y": x * math.sin(angle) + y * math.cos(angle),
         }
 
     def scale_col(self, val, lo, hi):
@@ -46,15 +46,27 @@ class RotatingBlockGenerator(SampleBase):
                     rot_x = ret["new_x"]
                     rot_y = ret["new_y"]
 
-                    if x >= min_display and x < max_display and y >= min_display and y < max_display:
-                        offset_canvas.SetPixel(rot_x + cent_x, rot_y + cent_y, self.scale_col(x, min_display, max_display), 255 - self.scale_col(y, min_display, max_display), self.scale_col(y, min_display, max_display))
+                    if (
+                        x >= min_display
+                        and x < max_display
+                        and y >= min_display
+                        and y < max_display
+                    ):
+                        offset_canvas.SetPixel(
+                            rot_x + cent_x,
+                            rot_y + cent_y,
+                            self.scale_col(x, min_display, max_display),
+                            255 - self.scale_col(y, min_display, max_display),
+                            self.scale_col(y, min_display, max_display),
+                        )
                     else:
                         offset_canvas.SetPixel(rot_x + cent_x, rot_y + cent_y, 0, 0, 0)
 
             offset_canvas = self.matrix.SwapOnVSync(offset_canvas)
 
+
 # Main function
 if __name__ == "__main__":
     rotating_block_generator = RotatingBlockGenerator()
-    if (not rotating_block_generator.process()):
+    if not rotating_block_generator.process():
         rotating_block_generator.print_help()
