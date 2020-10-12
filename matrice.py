@@ -8,23 +8,16 @@ from rgbmatrix import graphics, RGBMatrix, RGBMatrixOptions
 
 import time
 import threading
-from tcp_server import ThreadedTCPServer, ServerHandler
+from tcp_server import ThreadedTCPServer, ServerHandler, EVENTS
 
 from PIL import Image
-import glob
 import argparse
-import os
-import requests
 import json
 import colorsys
-import math
-import random
-import urllib2
 import datetime
 import sys
 
 from meteo import Meteo
-
 
 def gif_to_imgs(im, duration=0.05):
     ims = []
@@ -53,20 +46,6 @@ def gif_to_imgs(im, duration=0.05):
     return ims
 
 
-EVENTS = {
-    "NOEL": {
-        "images": ["1928.gif", "2162.gif", "94.png"],
-        "date": datetime.datetime(year=datetime.datetime.now().year, month=12, day=25),
-    },
-    "HALLOWEEN": {
-        "images": ["1547.gif", "24058.gif", "2772.gif"],
-        "date": datetime.datetime(year=datetime.datetime.now().year, month=10, day=31),
-    },
-    "PRIDE": {
-        "images": ["2100.png"],
-        "date": datetime.datetime(year=datetime.datetime.now().year, month=11, day=7),
-    },
-}
 
 # Main Matrice class
 class Matrice(object):

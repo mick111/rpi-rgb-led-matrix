@@ -4,13 +4,28 @@
 import socketserver
 import glob
 import time
-import urllib2
+import urllib.request
 from PIL import Image
+import datetime
 
 # To create a Threaded TCP Server for each connexion
 class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
     pass
 
+EVENTS = {
+    "NOEL": {
+        "images": ["1928.gif", "2162.gif", "94.png"],
+        "date": datetime.datetime(year=datetime.datetime.now().year, month=12, day=25),
+    },
+    "HALLOWEEN": {
+        "images": ["1547.gif", "24058.gif", "2772.gif"],
+        "date": datetime.datetime(year=datetime.datetime.now().year, month=10, day=31),
+    },
+    "PRIDE": {
+        "images": ["2100.png"],
+        "date": datetime.datetime(year=datetime.datetime.now().year, month=11, day=7),
+    },
+}
 
 def gif_to_imgs(im, duration=0.05):
     ims = []
@@ -140,7 +155,7 @@ class ServerHandler(socketserver.BaseRequestHandler):
                 )
                 duration = 0.05
                 ims = None
-                im = Image.open(urllib2.urlopen(commands[1]))
+                im = Image.open(urllib.request.urlopen(commands[1]))
                 if ".gif" in commands[1]:
                     ims = gif_to_imgs(im, duration)
                 else:
