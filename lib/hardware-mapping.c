@@ -19,7 +19,7 @@
  */
 #include "hardware-mapping.h"
 
-#define GPIO_BIT(b) (1<<(b))
+#define GPIO_BIT(b) ((uint64_t)1<<(b))
 
 struct HardwareMapping matrix_hardware_mappings[] = {
   /*
@@ -213,51 +213,75 @@ struct HardwareMapping matrix_hardware_mappings[] = {
     .p0_b2         = GPIO_BIT(25),
   },
 
-    
+#ifdef ENABLE_WIDE_GPIO_COMPUTE_MODULE
   /*
-   * Custom mappings
+   * Custom pin-out for compute-module
    */
-    {
-        .name          = "mick111",
+  {
+    .name          = "compute-module",
 
-        .output_enable = GPIO_BIT(2),
-        .clock         = GPIO_BIT(3),
-        .strobe        = GPIO_BIT(10),
+    /* This GPIO mapping is made for the official I/O development
+     * board. No pin is left free when using 6 parallel chains.
+     */
+    .output_enable = GPIO_BIT(18),
+    .clock         = GPIO_BIT(16),
+    .strobe        = GPIO_BIT(17),
 
-        /* Address lines */
-        .a             = GPIO_BIT(7),
-        .b             = GPIO_BIT(8),
-        .c             = GPIO_BIT(9),
+    .a             = GPIO_BIT(2),
+    .b             = GPIO_BIT(3),
+    .c             = GPIO_BIT(4),
+    .d             = GPIO_BIT(5),
+    .e             = GPIO_BIT(6),  /* RxD kept free unless 1:64 */
 
-        /* Parallel chain 0, RGB for both sub-panels */
-        .p0_r1         = GPIO_BIT(17),  /* masks: SPI0_SCKL  */
-        .p0_g1         = GPIO_BIT(18),  /* Not on RPi1, Rev1; use "regular-pi1" instead */
-        .p0_b1         = GPIO_BIT(22),   /* masks: SPI0_CE1   */
-        .p0_r2         = GPIO_BIT(23),   /* masks: SPI0_CE0   */
-        .p0_g2         = GPIO_BIT(24),   /* masks: SPI0_MISO  */
-        .p0_b2         = GPIO_BIT(25),  /* masks: SPI0_MOSI  */
-    },
+    /* Chain 0 */
+    .p0_r1         = GPIO_BIT(7),
+    .p0_g1         = GPIO_BIT(8),
+    .p0_b1         = GPIO_BIT(9),
+    .p0_r2         = GPIO_BIT(10),
+    .p0_g2         = GPIO_BIT(11),
+    .p0_b2         = GPIO_BIT(12),
 
-    {
-        .name          = "mick111_2",
+    /* Chain 1 */
+    .p1_r1         = GPIO_BIT(13),
+    .p1_g1         = GPIO_BIT(14),
+    .p1_b1         = GPIO_BIT(15),
+    .p1_r2         = GPIO_BIT(19),
+    .p1_g2         = GPIO_BIT(20),
+    .p1_b2         = GPIO_BIT(21),
 
-        .output_enable = GPIO_BIT(21), /* PIN.40 ; GPIO.29 ; wPi.29 ; BCM.21 */
-        .clock         = GPIO_BIT(26), /* PIN.37 ; GPIO.25 ; wPi.25 ; BCM.26 */
-        .strobe        = GPIO_BIT(13), /* PIN.33 ; GPIO.23 ; wPi.23 ; BCM.13 */
+    /* Chain 2 */
+    .p2_r1         = GPIO_BIT(22),
+    .p2_g1         = GPIO_BIT(23),
+    .p2_b1         = GPIO_BIT(24),
+    .p2_r2         = GPIO_BIT(25),
+    .p2_g2         = GPIO_BIT(26),
+    .p2_b2         = GPIO_BIT(27),
 
-        /* Address lines */
-        .a             = GPIO_BIT(16), /* PIN.36 ; GPIO.27 ; wPi.27 ; BCM.16 */
-        .b             = GPIO_BIT(19), /* PIN.35 ; GPIO.24 ; wPi.24 ; BCM.19 */
-        .c             = GPIO_BIT(20), /* PIN.38 ; GPIO.28 ; wPi.28 ; BCM.20 */
+    /* Chain 3 */
+    .p3_r1         = GPIO_BIT(28),
+    .p3_g1         = GPIO_BIT(29),
+    .p3_b1         = GPIO_BIT(30),
+    .p3_r2         = GPIO_BIT(31),
+    .p3_g2         = GPIO_BIT(32),
+    .p3_b2         = GPIO_BIT(33),
 
-        /* Parallel chain 0, RGB for both sub-panels */
-        .p0_r1         = GPIO_BIT(7),  /* PIN.26 ; CE1     ; wPi.11 ; BCM.7  */
-        .p0_g1         = GPIO_BIT(1),  /* PIN.28 ; SCL.0   ; wPi.31 ; BCM.1  */
-        .p0_b1         = GPIO_BIT(0),  /* PIN.27 ; SDA.0   ; wPi.30 ; BCM.0  */
-        .p0_r2         = GPIO_BIT(5),  /* PIN.29 ; GPIO.21 ; wPi.21 ; BCM.5  */
-        .p0_g2         = GPIO_BIT(12), /* PIN.32 ; GPIO.26 ; wPi.26 ; BCM.12 */
-        .p0_b2         = GPIO_BIT(6),  /* PIN.31 ; GPIO.22 ; wPi.22 ; BCM.6  */
-    },
-    
+    /* Chain 4 */
+    .p4_r1         = GPIO_BIT(34),
+    .p4_g1         = GPIO_BIT(35),
+    .p4_b1         = GPIO_BIT(36),
+    .p4_r2         = GPIO_BIT(37),
+    .p4_g2         = GPIO_BIT(38),
+    .p4_b2         = GPIO_BIT(39),
+
+    /* Chain 5 */
+    .p5_r1         = GPIO_BIT(40),
+    .p5_g1         = GPIO_BIT(41),
+    .p5_b1         = GPIO_BIT(42),
+    .p5_r2         = GPIO_BIT(43),
+    .p5_g2         = GPIO_BIT(44),
+    .p5_b2         = GPIO_BIT(45),
+  },
+#endif
+
   {0}
 };
