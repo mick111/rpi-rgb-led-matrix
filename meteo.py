@@ -2,11 +2,14 @@
 import time
 import math
 import requests
+import os
+from PIL import Image
+import random
 
 # Classe pour gerer la Meteo
 class Meteo(object):
-    def __init__(self, *args, **kwargs):
-        super.__init__(args, kwargs)
+    def __init__(self, openweathermap_apikey):
+        self.openweathermap_apikey = openweathermap_apikey
 
     # Intervale de temps entre chaque mise a jour
     outsideTimeInterval = 10 * 60
@@ -36,7 +39,7 @@ class Meteo(object):
             try:
                 temps += float(temp)
                 count += 1
-            except:
+            except Exception:
                 continue
         return None if count == 0 else (temps / count)
 
@@ -52,7 +55,7 @@ class Meteo(object):
                 f = open(os.path.join("/sys/bus/w1/devices/", ds, "w1_slave")).read()
                 # On reccupere et sauve la valeur
                 self.ins[room] = float(f.split("\n")[1].split("=")[1]) / 1000
-        except Exception as e:
+        except Exception:
             pass
         # On met a jour le timestamp
         self.lastInsideUpdate = time.time()
@@ -73,7 +76,7 @@ class Meteo(object):
             ).json()
             self.out = float(j["main"]["temp"])
             iconName = j["weather"][0]["icon"]
-        except Exception as e:
+        except Exception:
             pass
 
         self.ico = {
