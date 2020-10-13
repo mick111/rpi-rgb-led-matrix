@@ -104,20 +104,20 @@ class Matrice(object):
 
         self.font = graphics.Font()
         self.font.LoadFont(
-            "/home/pi/Documents/display16x32/rpi-rgb-led-matrix/fonts/9x15.bdf"
+            "../fonts/9x15.bdf"
         )
 
         self.fontSmall = graphics.Font()
         self.fontSmall.LoadFont(
-            "/home/pi/Documents/display16x32/rpi-rgb-led-matrix/fonts/6x10.bdf"
+            "../fonts/6x10.bdf"
         )
         self.fontLittle = graphics.Font()
         self.fontLittle.LoadFont(
-            "/home/pi/Documents/display16x32/rpi-rgb-led-matrix/fonts/5x7.bdf"
+            "../fonts/5x7.bdf"
         )
         self.fontTiny = graphics.Font()
         self.fontTiny.LoadFont(
-            "/home/pi/Documents/display16x32/rpi-rgb-led-matrix/fonts/4x6.bdf"
+            "../fonts/4x6.bdf"
         )
 
         self.pos = self.offscreen_canvas.width

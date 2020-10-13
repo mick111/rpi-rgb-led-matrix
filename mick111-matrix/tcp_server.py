@@ -306,7 +306,7 @@ class ServerHandler(socketserver.BaseRequestHandler):
                 # Get the font name to show
                 fontname = commands[1].replace("\x00", "").strip().lower()
                 # Go through all available fonts
-                for i in glob.glob("../../../fonts/*.bdf"):
+                for i in glob.glob("../fonts/*.bdf"):
                     if fontname in i.lower():
                         self.server.server_runner.font.LoadFont(i)
                         break
