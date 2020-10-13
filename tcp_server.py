@@ -142,7 +142,7 @@ class ServerHandler(socketserver.BaseRequestHandler):
                 if event not in EVENTS:
                     self.addToHistory("EVENT {} NOT REGISTERED".format(event))
                     pass
-                self.server.server_runner.showEvent(event)
+                self.server.server_runner.event(event)
 
             elif command == "URLGIF" and arguments:
                 commands = data.split(" ")
