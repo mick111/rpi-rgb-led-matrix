@@ -669,7 +669,8 @@ if __name__ == "__main__":
     parser.add_argument(
         "--history",
         type=argparse.FileType("a+"),
-        help="History of messages received by clients..",
+        help="History of messages received by clients.",
+        default=open("/var/log/ledbanner.history", "a+"),
     )
     parser.add_argument(
         "-l",
