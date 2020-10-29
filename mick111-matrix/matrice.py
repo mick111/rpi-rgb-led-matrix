@@ -609,8 +609,8 @@ if __name__ == "__main__":
     parser.add_argument(
         "--led-slowdown-gpio",
         action="store",
-        help="Slow down writing to GPIO. Range: 0..4. Default: 1",
-        default=1,
+        help="Slow down writing to GPIO. Range: 0..4. Default: 2",
+        default=2,
         type=int,
     )
     parser.add_argument(
