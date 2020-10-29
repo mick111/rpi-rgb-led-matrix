@@ -252,7 +252,7 @@ class Matrice(object):
         EVENT = EVENTS[name]
 
         date = EVENT["date"]
-        days_before_event = (date - datetime.datetime.now()).days
+        days_before_event = (date - datetime.datetime.now()).days + 1
 
         URL_TEMPLATE = "./lametric_caches/{}"
         urls = [URL_TEMPLATE.format(num) for num in EVENT["images"]]

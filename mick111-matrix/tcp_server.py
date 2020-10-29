@@ -15,7 +15,7 @@ class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
 EVENTS = {
     "NOEL": {
         "images": ["1928.gif", "2162.gif", "94.png"],
-        "date": datetime.datetime(year=datetime.datetime.now().year, month=12, day=25),
+        "date": datetime.datetime(year=datetime.datetime.now().year, month=12, day=24),
     },
     "HALLOWEEN": {
         "images": ["1547.gif", "24058.gif", "2772.gif"],
