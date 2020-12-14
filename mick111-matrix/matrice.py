@@ -326,8 +326,8 @@ class Matrice(object):
         xmas = datetime.datetime(year=datetime.datetime.now().year, month=12, day=25)
         # Time before Xmas
         remaining = xmas - datetime.datetime.now()
-        remaining_text = "{2d}  {02d}:{02d}".format(remaining.days, remaining.seconds/3600, (remaining.seconds % 3600) / 60)
-        
+        remaining_text = "{:2d}  {:02d}:{:02d}".format(remaining.days, remaining.seconds/3600, (remaining.seconds % 3600) / 60)
+
         red = graphics.Color(255, 0, 0)
         green = graphics.Color(0, 255, 0)
         graphics.DrawText(ca, f, 0, 6, red, remaining_text)

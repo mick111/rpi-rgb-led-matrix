@@ -17,14 +17,14 @@ EVENTS = {
         "images": ["1928.gif", "2162.gif", "94.png"],
         "date": datetime.datetime(year=datetime.datetime.now().year, month=12, day=24),
     },
-    "HALLOWEEN": {
-        "images": ["1547.gif", "24058.gif", "2772.gif"],
-        "date": datetime.datetime(year=datetime.datetime.now().year, month=10, day=31),
-    },
-    "PRIDE": {
-        "images": ["2100.png"],
-        "date": datetime.datetime(year=datetime.datetime.now().year, month=11, day=7),
-    },
+    # "HALLOWEEN": {
+    #     "images": ["1547.gif", "24058.gif", "2772.gif"],
+    #     "date": datetime.datetime(year=datetime.datetime.now().year, month=10, day=31),
+    # },
+    # "PRIDE": {
+    #     "images": ["2100.png"],
+    #     "date": datetime.datetime(year=datetime.datetime.now().year, month=11, day=7),
+    # },
 }
 
 def gif_to_imgs(im, duration=0.05):
