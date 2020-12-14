@@ -76,29 +76,29 @@ class Meteo(object):
             ).json()
             self.out = float(j["main"]["temp"])
             iconName = j["weather"][0]["icon"]
-        except Exception:
-            pass
 
-        self.ico = {
-            "01d": "clear-day",
-            "02d": "partly-cloudy-day",
-            "03d": "cloudy",
-            "04d": "cloudy",
-            "09d": "rain",
-            "10d": "rain",
-            "11d": "storm",
-            "13d": "snow",
-            "50d": "fog",
-            "01n": "clear-night",
-            "02n": "partly-cloudy-night",
-            "03n": "cloudy",
-            "04n": "cloudy",
-            "09n": "rain",
-            "10n": "rain",
-            "11n": "storm",
-            "13n": "snow",
-            "50n": "fog",
-        }.get(iconName, "error")
+            self.ico = {
+                "01d": "clear-day",
+                "02d": "partly-cloudy-day",
+                "03d": "cloudy",
+                "04d": "cloudy",
+                "09d": "rain",
+                "10d": "rain",
+                "11d": "storm",
+                "13d": "snow",
+                "50d": "fog",
+                "01n": "clear-night",
+                "02n": "partly-cloudy-night",
+                "03n": "cloudy",
+                "04n": "cloudy",
+                "09n": "rain",
+                "10n": "rain",
+                "11n": "storm",
+                "13n": "snow",
+                "50n": "fog",
+            }.get(iconName, "error")
+        except Exception:
+            self.ico = "error"
 
         # On met a jour le timestamp
         self.lastOutsideUpdate = time.time()
