@@ -302,13 +302,13 @@ class Matrice(object):
         hm = time.strftime("%H%M%S")
 
         if ca.width == 32:
-            timePos = 5, 0
+            timePos = 3, 11
             inTempPos = 0, 15
             outTempPos = 13, 15
             iconSize = 8
             iconPos = 23, 7
         elif ca.width == 64:
-            timePos = 3, 11
+            timePos = 3, 6
             iconPos = 64 - 16, 0
             iconSize = 16
             inTempPos = 30, 6
@@ -330,10 +330,10 @@ class Matrice(object):
 
         red = graphics.Color(255, 0, 0)
         green = graphics.Color(0, 255, 0)
-        graphics.DrawText(ca, f, 0, 6, red, remaining_text)
-        graphics.DrawText(ca, f2, 2, 6, green, "d")
+        graphics.DrawText(ca, f2, 0, 16, red, remaining_text)
+        graphics.DrawText(ca, f2, 5, 16, green, "d")
         if int(hm[-1]) % 2:
-            graphics.DrawText(ca, f2, 6, 6, green, ":")
+            graphics.DrawText(ca, f2, 20, 16, green, ":")
 
         # Print Temperatures
         tempFormat = "{:2.0f}"
