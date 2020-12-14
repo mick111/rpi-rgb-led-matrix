@@ -302,7 +302,7 @@ class Matrice(object):
         hm = time.strftime("%H%M%S")
 
         if ca.width == 32:
-            timePos = (5, 6)
+            timePos = 5, 0
             inTempPos = 0, 15
             outTempPos = 13, 15
             iconSize = 8
@@ -321,6 +321,19 @@ class Matrice(object):
             graphics.DrawText(ca, f2, timePos[0] + 9, timePos[1], co, ":")
         # Print Minutes
         graphics.DrawText(ca, f, timePos[0] + 12, timePos[1], co, hm[2:4])
+
+        # Xmas Time
+        xmas = datetime.datetime(year=datetime.datetime.now().year, month=12, day=25)
+        # Time before Xmas
+        remaining = xmas - datetime.datetime.now()
+        remaining_text = "{2d}  {02d}:{02d}".format(remaining.days, remaining.seconds/3600, (remaining.seconds % 3600) / 60)
+        
+        red = graphics.Color(255, 0, 0)
+        green = graphics.Color(0, 255, 0)
+        graphics.DrawText(ca, f, 0, 6, red, remaining_text)
+        graphics.DrawText(ca, f2, 2, 6, green, "d")
+        if int(hm[-1]) % 2:
+            graphics.DrawText(ca, f2, 6, 6, green, ":")
 
         # Print Temperatures
         tempFormat = "{:2.0f}"
