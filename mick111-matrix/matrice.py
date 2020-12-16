@@ -323,7 +323,7 @@ class Matrice(object):
         graphics.DrawText(ca, f, timePos[0] + 12, timePos[1], co, hm[2:4])
 
         # Xmas Time
-        xmas = datetime.datetime(year=datetime.datetime.now().year, month=12, day=25)
+        xmas = datetime.datetime(year=datetime.datetime.now().year, month=12, day=25, hour=3)
         # Time before Xmas
         remaining = xmas - datetime.datetime.now()
         # Colors
@@ -331,14 +331,14 @@ class Matrice(object):
         green = graphics.Color(0, 255, 0)
 
         # Days
-        graphics.DrawText(ca, f2, 7, 14, green, "j")
-        graphics.DrawText(ca, f2, 1, 14, red, "{:2d}".format(remaining.days))
+        graphics.DrawText(ca, f2, 8, 14, green, "dodos")
+        graphics.DrawText(ca, f2, 1 if remaining.days+1 > 9 else 0, 14, red, "{:2d}".format(remaining.days+1))
 
         # Hours and minutes
-        graphics.DrawText(ca, f2, 11, 14, red, "{:02d}".format(remaining.seconds // 3600))
-        graphics.DrawText(ca, f2, 21, 14, red, "{:02d}".format((remaining.seconds % 3600) // 60))
-        if int(hm[-1]) % 2:
-            graphics.DrawText(ca, f2, 18, 14, green, ":")
+        #graphics.DrawText(ca, f2, 11, 14, red, "{:02d}".format(remaining.seconds // 3600))
+        #graphics.DrawText(ca, f2, 21, 14, red, "{:02d}".format((remaining.seconds % 3600) // 60))
+        #if int(hm[-1]) % 2:
+        #    graphics.DrawText(ca, f2, 18, 14, green, ":")
 
         # Print Temperatures
         tempFormat = "{:2.0f}"
