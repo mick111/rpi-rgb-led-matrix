@@ -35,7 +35,7 @@ TARGET=librgbmatrix
 #   classic            # (deprecated) Classic Pi1/2/. Not used anymore.
 #   classic-pi1        # (deprecated) Classic pinout on Rasperry Pi 1
 #   mick111
-HARDWARE_DESC?=mick111
+HARDWARE_DESC?=adafruit-hat
 
 # If you see that your display is inverse, you might have a matrix variant
 # has uses inverse logic for the RGB bits. In that case: uncomment this.
