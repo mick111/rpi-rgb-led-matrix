@@ -301,8 +301,13 @@ class Matrice(object):
 
         hm = time.strftime("%H%M%S")
 
+        # Xmas Time
+        xmas = datetime.datetime(year=datetime.datetime.now().year, month=12, day=25, hour=3)
+        # Time before Xmas
+        remaining = xmas - datetime.datetime.now()
+
         if ca.width == 32:
-            timePos = 3, 11
+            timePos = 3, 6
             inTempPos = 0, 15
             outTempPos = 13, 15
             iconSize = 8
@@ -314,6 +319,11 @@ class Matrice(object):
             inTempPos = 30, 6
             outTempPos = 30, 14
 
+        print_xmas = remaining.days < 35
+ 
+        if print_xmas:
+            timePos = timePos[0], timePos[1] + 5
+
         # Print hours
         graphics.DrawText(ca, f, timePos[0] + 0, timePos[1], co, hm[0:2])
         # Print columns
@@ -322,23 +332,18 @@ class Matrice(object):
         # Print Minutes
         graphics.DrawText(ca, f, timePos[0] + 12, timePos[1], co, hm[2:4])
 
-        # Xmas Time
-        xmas = datetime.datetime(year=datetime.datetime.now().year, month=12, day=25, hour=3)
-        # Time before Xmas
-        remaining = xmas - datetime.datetime.now()
-        # Colors
-        red = graphics.Color(255, 0, 0)
-        green = graphics.Color(0, 255, 0)
+        if print_xmas:
+            # Xmas Time
+            xmas = datetime.datetime(year=datetime.datetime.now().year, month=12, day=25, hour=3)
+            # Time before Xmas
+            remaining = xmas - datetime.datetime.now()
+            # Colors
+            red = graphics.Color(255, 0, 0)
+            green = graphics.Color(0, 255, 0)
 
-        # Days
-        graphics.DrawText(ca, f2, 8, 14, green, "dodos")
-        graphics.DrawText(ca, f2, 1 if remaining.days+1 > 9 else 0, 14, red, "{:2d}".format(remaining.days+1))
-
-        # Hours and minutes
-        #graphics.DrawText(ca, f2, 11, 14, red, "{:02d}".format(remaining.seconds // 3600))
-        #graphics.DrawText(ca, f2, 21, 14, red, "{:02d}".format((remaining.seconds % 3600) // 60))
-        #if int(hm[-1]) % 2:
-        #    graphics.DrawText(ca, f2, 18, 14, green, ":")
+            # Days
+            graphics.DrawText(ca, f2, 8, 14, green, "dodos")
+            graphics.DrawText(ca, f2, 1 if remaining.days+1 > 9 else 0, 14, red, "{:2d}".format(remaining.days+1))
 
         # Print Temperatures
         tempFormat = "{:2.0f}"
@@ -601,7 +606,7 @@ if __name__ == "__main__":
         "--led-gpio-mapping",
         help="Hardware Mapping: regular, adafruit-hat, adafruit-hat-pwm, mick111",
         choices=["regular", "adafruit-hat", "adafruit-hat-pwm", "mick111"],
-        default="adafruit-hat",
+        default="adafruit-hat-pwm",
         type=str,
     )
     parser.add_argument(
