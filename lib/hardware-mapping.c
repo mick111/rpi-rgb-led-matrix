@@ -215,7 +215,7 @@ struct HardwareMapping matrix_hardware_mappings[] = {
   {
       .name          = "mick111",
 
-      .output_enable = GPIO_BIT(21), /* PIN.40 ; GPIO.29 ; wPi.29 ; BCM.21 */
+      .output_enable = GPIO_BIT(21), /* PIN.40 ; GPIO.21 ; wPi.29 ; BCM.21 */
       .clock         = GPIO_BIT(26), /* PIN.37 ; GPIO.25 ; wPi.25 ; BCM.26 */
       .strobe        = GPIO_BIT(13), /* PIN.33 ; GPIO.23 ; wPi.23 ; BCM.13 */
 
