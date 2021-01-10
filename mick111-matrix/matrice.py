@@ -307,13 +307,13 @@ class Matrice(object):
         remaining = xmas - datetime.datetime.now()
 
         if ca.width == 32:
-            timePos = 3, 6
+            timePos = 3, 11
             inTempPos = 0, 15
             outTempPos = 13, 15
             iconSize = 8
             iconPos = 23, 7
         elif ca.width == 64:
-            timePos = 3, 6
+            timePos = 3, 11
             iconPos = 64 - 16, 0
             iconSize = 16
             inTempPos = 30, 6
@@ -322,7 +322,7 @@ class Matrice(object):
         print_xmas = remaining.days < 35
  
         if print_xmas:
-            timePos = timePos[0], timePos[1] + 5
+            timePos = timePos[0], timePos[1] - 5
 
         # Print hours
         graphics.DrawText(ca, f, timePos[0] + 0, timePos[1], co, hm[0:2])
@@ -333,10 +333,6 @@ class Matrice(object):
         graphics.DrawText(ca, f, timePos[0] + 12, timePos[1], co, hm[2:4])
 
         if print_xmas:
-            # Xmas Time
-            xmas = datetime.datetime(year=datetime.datetime.now().year, month=12, day=25, hour=3)
-            # Time before Xmas
-            remaining = xmas - datetime.datetime.now()
             # Colors
             red = graphics.Color(255, 0, 0)
             green = graphics.Color(0, 255, 0)
