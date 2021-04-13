@@ -391,11 +391,11 @@ class Matrice(object):
             compteurPos = 70, 11
             graphics.DrawText(
                 ca,
-                f,
+                f2,
                 compteurPos[0],
                 compteurPos[1],
                 co,
-                "{} {}".format(self.compteur.compte, self.compteur.name),
+                "{:2d} {}".format(self.compteur.compte, self.compteur.name),
             )
 
     # Run loop of the server
