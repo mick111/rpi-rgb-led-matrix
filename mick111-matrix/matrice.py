@@ -317,9 +317,7 @@ class Matrice(object):
             timePos = timePos[0], timePos[1] - 5
 
         # Print hours
-        graphics.DrawText(
-            ca, f, timePos[0] + 0, timePos[1], co, str(ca.width)
-        )  # hm[0:2])
+        graphics.DrawText(ca, f, timePos[0] + 0, timePos[1], co, hm[0:2])
         # Print columns
         if int(hm[-1]) % 2:
             graphics.DrawText(ca, f2, timePos[0] + 9, timePos[1], co, ":")
@@ -380,7 +378,7 @@ class Matrice(object):
                 )
 
         if ca.width >= 96:
-            timePos = 100, 11
+            timePos = 70, 11
             graphics.DrawText(ca, f, timePos[0], timePos[1], co, "Test")
 
     # Run loop of the server
