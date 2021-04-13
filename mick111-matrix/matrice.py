@@ -400,7 +400,7 @@ class Matrice(object):
                 ca,
                 f,
                 64,
-                10,
+                8,
                 co,
                 str(self.compteur.compte).center(8),
             )
