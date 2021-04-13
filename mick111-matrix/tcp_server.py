@@ -12,6 +12,7 @@ import datetime
 class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
     pass
 
+
 EVENTS = {
     "NOEL": {
         "images": ["1928.gif", "2162.gif", "94.png"],
@@ -26,6 +27,7 @@ EVENTS = {
     #     "date": datetime.datetime(year=datetime.datetime.now().year, month=11, day=7),
     # },
 }
+
 
 def gif_to_imgs(im, duration=0.05):
     ims = []
@@ -99,7 +101,7 @@ class ServerHandler(socketserver.BaseRequestHandler):
                 if not datarecv:
                     break
                 # We append the received data in the buffer
-                databuffer += datarecv.decode('utf-8')
+                databuffer += datarecv.decode("utf-8")
 
             # Parse received data. Commands must be ended by '\n'
             datasplit = databuffer.split("\n", 1)
@@ -174,7 +176,7 @@ class ServerHandler(socketserver.BaseRequestHandler):
                 self.server.server_runner.pos = 16
                 self.server.server_runner.sleeptime = duration
 
-            elif command == "IMAGES" and len(commands) > 1:
+            elif command == "IMAGES" and arguments:
                 self.server.server_runner.reset()
                 self.server.server_runner.addToHistory(
                     "[" + self.client_address[0] + "] " + data
@@ -185,7 +187,7 @@ class ServerHandler(socketserver.BaseRequestHandler):
                 # Show images from specific folder
                 self.server.server_runner.imageBackgroundColorRGB = (0, 0, 0)
                 self.server.server_runner.images = [
-                    Image.open(i).convert("RGB") for i in sorted(glob.glob(commands[1]))
+                    Image.open(i).convert("RGB") for i in sorted(glob.glob(arguments))
                 ]
                 self.server.server_runner.pos = 0
                 self.server.server_runner.sleeptime = 2
@@ -203,21 +205,29 @@ class ServerHandler(socketserver.BaseRequestHandler):
                 ]
                 self.server.server_runner.pos = -64 if command == "NYAN" else -32
                 self.server.server_runner.sleeptime = 0.07
-            elif command == "TEXT" and len(commands) > 1:
+            elif command == "TEXT" and arguments:
                 self.server.server_runner.reset()
                 self.server.server_runner.addToHistory(
                     "[" + self.client_address[0] + "] " + data
                 )
                 self.server.server_runner.timeBeforeIdle = time.time() + 30
                 # Sets the text to show
-                self.server.server_runner.text = commands[1].strip()
+                self.server.server_runner.text = arguments.strip()
                 self.server.server_runner.pos = (
                     self.server.server_runner.offscreen_canvas.width
                 )
+            elif command == "COMPTEUR":
+                self.server.server_runner.addToHistory(
+                    "[" + self.client_address[0] + "] " + data
+                )
+                self.server.server_runner.compteur.action(arguments)
+
             elif command == "BRIGHTNESS?":
                 self.server.server_runner.updateFromConfigFile()
                 self.request.sendall(
-                    "{}\n".format(self.server.server_runner.max_brightness * 100.0).encode('utf-8')
+                    "{}\n".format(
+                        self.server.server_runner.max_brightness * 100.0
+                    ).encode("utf-8")
                 )
             elif (command == "BRIGHTNESS") and len(commands) > 1:
                 try:
@@ -230,7 +240,9 @@ class ServerHandler(socketserver.BaseRequestHandler):
             elif command == "POWERSTATE?":
                 self.server.server_runner.updateFromConfigFile()
                 self.request.sendall(
-                    "{}\n".format("1" if self.server.server_runner.powerState else "0").encode('utf-8')
+                    "{}\n".format(
+                        "1" if self.server.server_runner.powerState else "0"
+                    ).encode("utf-8")
                 )
             elif (command == "POWERSTATE") and len(commands) == 1:
                 try:
@@ -253,14 +265,14 @@ class ServerHandler(socketserver.BaseRequestHandler):
                 self.request.sendall(
                     "#{0:02X}{1:02X}{2:02X}\n".format(
                         *self.server.server_runner.textColorRGB
-                    ).encode('utf-8')
+                    ).encode("utf-8")
                 )
             elif command == "BGCOLOR?":
                 self.server.server_runner.updateFromConfigFile()
                 self.request.sendall(
                     "#{0:02X}{1:02X}{2:02X}\n".format(
                         *self.server.server_runner.backgroundColorRGB
-                    ).encode('utf-8')
+                    ).encode("utf-8")
                 )
             elif (command == "COLOR" or command == "BGCOLOR") and len(commands) > 1:
                 # Sets the text color or the background color

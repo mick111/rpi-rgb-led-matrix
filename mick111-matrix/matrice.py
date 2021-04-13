@@ -16,6 +16,7 @@ import datetime
 import sys
 
 from meteo import Meteo
+from compteur import Compteur
 
 
 def gif_to_imgs(im, duration=0.05):
@@ -91,6 +92,8 @@ class Matrice(object):
         self.fileinformation = self.args.conffile
         openweathermap_apikey = open(self.args.openweathermap_apikey).read().strip()
         self.meteo = Meteo(openweathermap_apikey)
+
+        self.compteur = Compteur()
 
         self.reset()
 
@@ -178,6 +181,9 @@ class Matrice(object):
             int(rgb[2] * 255.0),
         )
 
+        self.compteur.name = fileinfo.get("compteurName", None)
+        self.compteur.compte = fileinfo.get("compteurCompte", 0)
+
     def updateToConfigFile(self):
         try:
             fileinfo = {}
@@ -201,6 +207,10 @@ class Matrice(object):
             fileinfo["hue_bg"] = int(hls[0] * 360)
             fileinfo["light_bg"] = int(hls[1] * 100)
             fileinfo["saturation_bg"] = int(hls[2] * 100)
+
+            if self.compteur.name is not None:
+                fileinfo["compteurName"] = self.compteur.name
+                fileinfo["compteurCompte"] = self.compteur.compte
 
             json.dump(fileinfo, open(self.fileinformation, "w+"))
         except Exception as e:
@@ -377,9 +387,16 @@ class Matrice(object):
                     ca, f, outTempPos[0] + length, outTempPos[1], co, "C"
                 )
 
-        if ca.width >= 96:
-            timePos = 70, 11
-            graphics.DrawText(ca, f, timePos[0], timePos[1], co, "Test")
+        if ca.width >= 96 and self.compteur.name is not None:
+            compteurPos = 70, 11
+            graphics.DrawText(
+                ca,
+                f,
+                compteurPos[0],
+                compteurPos[1],
+                co,
+                "{} {}".format(self.compteur.compte, self.compteur.name),
+            )
 
     # Run loop of the server
     def show(self):
