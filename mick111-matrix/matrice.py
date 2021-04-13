@@ -388,7 +388,7 @@ class Matrice(object):
                 )
 
         if ca.width >= 96 and self.compteur.name is not None:
-            compteurPos = 70, 11
+            compteurPos = 64, 11
             graphics.DrawText(
                 ca,
                 f2,
