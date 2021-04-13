@@ -221,6 +221,7 @@ class ServerHandler(socketserver.BaseRequestHandler):
                     "[" + self.client_address[0] + "] " + data
                 )
                 self.server.server_runner.compteur.action(arguments)
+                self.server.server_runner.updateToConfigFile()
 
             elif command == "BRIGHTNESS?":
                 self.server.server_runner.updateFromConfigFile()

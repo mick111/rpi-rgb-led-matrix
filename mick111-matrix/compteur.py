@@ -11,7 +11,6 @@ class Compteur(object):
         self.compte = 0
 
     def action(self, arguments):
-        print("COMPT", arguments)
         if arguments is None:
             self.name = None
             self.compte = 0
