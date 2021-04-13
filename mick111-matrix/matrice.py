@@ -402,7 +402,7 @@ class Matrice(object):
                 64,
                 8,
                 co,
-                str(self.compteur.compte).center(8),
+                str(self.compteur.compte).center(6),
             )
 
     # Run loop of the server
