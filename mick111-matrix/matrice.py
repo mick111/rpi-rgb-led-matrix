@@ -388,14 +388,21 @@ class Matrice(object):
                 )
 
         if ca.width >= 96 and self.compteur.name is not None:
-            compteurPos = 64, 11
             graphics.DrawText(
                 ca,
                 f2,
-                compteurPos[0],
-                compteurPos[1],
+                64,
+                15,
                 co,
-                "{:2d} {}".format(self.compteur.compte, self.compteur.name),
+                self.compteur.name.center(8),
+            )
+            graphics.DrawText(
+                ca,
+                f,
+                64,
+                10,
+                co,
+                str(self.compteur.compte).center(8),
             )
 
     # Run loop of the server
