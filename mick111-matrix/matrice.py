@@ -392,7 +392,7 @@ class Matrice(object):
             graphics.DrawText(
                 ca,
                 f2,
-                64 + max(0, 32 - (len(name) * 4) / 2),
+                64 + max(0, (32 - len(name) * 4) / 2),
                 14,
                 co,
                 name,
@@ -401,7 +401,7 @@ class Matrice(object):
             graphics.DrawText(
                 ca,
                 f,
-                64 + max(0, 32 - (len(compte) * 5) / 2),
+                64 + max(0, (32 - len(compte) * 5) / 2),
                 7,
                 co,
                 compte,
