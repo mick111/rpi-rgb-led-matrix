@@ -19,6 +19,7 @@ import sys
 
 from meteo import Meteo
 
+
 def gif_to_imgs(im, duration=0.05):
     ims = []
     try:
@@ -44,7 +45,6 @@ def gif_to_imgs(im, duration=0.05):
             ims[first_img:] + ims[:first_img]
         )  # We put the first_img last items at the begining to make it start by the first one
     return ims
-
 
 
 # Main Matrice class
@@ -103,22 +103,14 @@ class Matrice(object):
         self.offscreen_canvas = self.matrix.CreateFrameCanvas()
 
         self.font = graphics.Font()
-        self.font.LoadFont(
-            "../fonts/9x15.bdf"
-        )
+        self.font.LoadFont("../fonts/9x15.bdf")
 
         self.fontSmall = graphics.Font()
-        self.fontSmall.LoadFont(
-            "../fonts/6x10.bdf"
-        )
+        self.fontSmall.LoadFont("../fonts/6x10.bdf")
         self.fontLittle = graphics.Font()
-        self.fontLittle.LoadFont(
-            "../fonts/5x7.bdf"
-        )
+        self.fontLittle.LoadFont("../fonts/5x7.bdf")
         self.fontTiny = graphics.Font()
-        self.fontTiny.LoadFont(
-            "../fonts/4x6.bdf"
-        )
+        self.fontTiny.LoadFont("../fonts/4x6.bdf")
 
         self.pos = self.offscreen_canvas.width
 
@@ -302,7 +294,9 @@ class Matrice(object):
         hm = time.strftime("%H%M%S")
 
         # Xmas Time
-        xmas = datetime.datetime(year=datetime.datetime.now().year, month=12, day=25, hour=3)
+        xmas = datetime.datetime(
+            year=datetime.datetime.now().year, month=12, day=25, hour=3
+        )
         # Time before Xmas
         remaining = xmas - datetime.datetime.now()
 
@@ -320,7 +314,7 @@ class Matrice(object):
             outTempPos = 30, 14
 
         print_xmas = remaining.days < 35
- 
+
         if print_xmas:
             timePos = timePos[0], timePos[1] - 5
 
@@ -339,7 +333,14 @@ class Matrice(object):
 
             # Days
             graphics.DrawText(ca, f2, 8, 14, green, "dodos")
-            graphics.DrawText(ca, f2, 1 if remaining.days+1 > 9 else 0, 14, red, "{:2d}".format(remaining.days+1))
+            graphics.DrawText(
+                ca,
+                f2,
+                1 if remaining.days + 1 > 9 else 0,
+                14,
+                red,
+                "{:2d}".format(remaining.days + 1),
+            )
 
         # Print Temperatures
         tempFormat = "{:2.0f}"
