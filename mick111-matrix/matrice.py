@@ -306,7 +306,7 @@ class Matrice(object):
             outTempPos = 13, 15
             iconSize = 8
             iconPos = 23, 7
-        elif ca.width == 64:
+        elif ca.width >= 64:
             timePos = 3, 11
             iconPos = 64 - 16, 0
             iconSize = 16
@@ -349,7 +349,7 @@ class Matrice(object):
             length = graphics.DrawText(
                 ca, f, inTempPos[0], inTempPos[1], co, tempFormat.format(temp)
             )
-            if ca.width == 64:
+            if ca.width >= 64:
                 length -= 2
                 length += graphics.DrawText(
                     ca, f, inTempPos[0] + length, inTempPos[1], co, "°"
@@ -369,7 +369,7 @@ class Matrice(object):
             length = graphics.DrawText(
                 ca, f, outTempPos[0], outTempPos[1], co, tempFormat.format(outTemp)
             )
-            if ca.width == 64:
+            if ca.width >= 64:
                 length -= 2
                 length += graphics.DrawText(
                     ca, f, outTempPos[0] + length, outTempPos[1], co, "°"
@@ -379,21 +379,22 @@ class Matrice(object):
                     ca, f, outTempPos[0] + length, outTempPos[1], co, "C"
                 )
 
+        if ca.width >= 96:
+            timePos = 100, 11
+            graphics.DrawText(ca, f, timePos[0] + 0, timePos[1], co, "Test")
+
     # Run loop of the server
     def show(self):
         # Run forever
-        # print "[",self.__class__.__name__,"]", "entering infinite loop"
         last_time = time.localtime()
         event_count = 0
 
         while True:
             # Wait for a certain time for each display
-            # print "[",self.__class__.__name__,"]", "sleep for", self.sleeptime
             time.sleep(self.sleeptime)
 
             # Compute if we have to go to idle.
             if self.timeBeforeIdle < time.time():
-                # print "[",self.__class__.__name__,"]", "Got idle, performing reset"
                 self.reset()
 
             # Update data from configuration file
@@ -401,7 +402,6 @@ class Matrice(object):
 
             # Check if we are OFF
             if not self.powerState:
-                # print "[",self.__class__.__name__,"]", "OFF-state style"
                 # Clear all content
                 self.offscreen_canvas.Clear()
                 self.offscreen_canvas = self.matrix.SwapOnVSync(self.offscreen_canvas)
@@ -571,7 +571,7 @@ if __name__ == "__main__":
         "--led-chain",
         action="store",
         help="Daisy-chained boards. Default: 2.",
-        default=2,
+        default=3,
         type=int,
     )
     parser.add_argument(
