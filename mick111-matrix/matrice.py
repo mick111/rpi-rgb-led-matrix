@@ -1,7 +1,5 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
-
-#!/usr/bin/env python
 # Run a server to make things with the display
 
 from rgbmatrix import graphics, RGBMatrix, RGBMatrixOptions
@@ -431,7 +429,6 @@ class Matrice(object):
 
             # In order of priority: Hour -> Text -> Image
             if self.hour is not None:
-                # print "[",self.__class__.__name__,"]", "HOUR"
                 try:
                     # Draw hour
                     self.offscreen_canvas.Fill(
@@ -461,7 +458,6 @@ class Matrice(object):
                     print("Cannot draw Hour", str(e))
 
             elif self.text is not None:
-                # print "[",self.__class__.__name__,"]", "TEXT"
                 try:
                     # Draw text
                     self.offscreen_canvas.Fill(
@@ -510,7 +506,6 @@ class Matrice(object):
                     print("Cannot draw text", str(e))
 
             elif self.images is not None:
-                # print "[",self.__class__.__name__,"]", "IMAGE", self.pos, "over", len(self.images)
                 # Get the current image
                 self.offscreen_canvas.Fill(
                     self.imageBackgroundColorRGB[0],
@@ -527,7 +522,6 @@ class Matrice(object):
                 # Next position is shifted by one on the right
                 self.pos += 1
                 if self.pos > 2000:
-                    # print "[",self.__class__.__name__,"]", "Watchdog for pos to high"
                     self.images = None
                 if self.event_day is not None and posX > 32:
                     color = graphics.Color(
