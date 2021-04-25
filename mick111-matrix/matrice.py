@@ -17,6 +17,7 @@ import sys
 
 from meteo import Meteo
 from compteur import Compteur
+from octoprint import Octoprint
 
 
 def gif_to_imgs(im, duration=0.05):
@@ -94,6 +95,13 @@ class Matrice(object):
         self.meteo = Meteo(openweathermap_apikey)
 
         self.compteur = Compteur()
+
+        octoprint_json = json.loads(open(self.args.octoprint_json).read())
+        octoprint_url, octoprint_apikey = (
+            octoprint_json["url"],
+            octoprint_json["apikey"],
+        )
+        self.octoprint = Octoprint(url=octoprint_url, apikey=octoprint_apikey)
 
         self.reset()
 
@@ -705,6 +713,11 @@ if __name__ == "__main__":
         "--openweathermap_apikey",
         help="File Containing Open Weather Map API key.",
         default="/etc/openweathermap_apikey",
+    )
+    parser.add_argument(
+        "--octoprint_json",
+        help="File Containing Octoprint API key.",
+        default="/etc/octoprint_creds.json",
     )
     parser.add_argument(
         "--history",
