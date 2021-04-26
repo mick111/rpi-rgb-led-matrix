@@ -424,7 +424,7 @@ class Matrice(object):
                     time_left,
                 )
 
-            if self.compteur.name is not None:
+            elif self.compteur.name is not None:
                 name = self.compteur.name
                 graphics.DrawText(
                     ca,
