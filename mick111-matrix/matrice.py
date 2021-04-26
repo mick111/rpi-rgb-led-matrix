@@ -292,7 +292,7 @@ class Matrice(object):
 
     def drawIdlePanel(self):
         # Idle Panel:
-        co, f, f2, ca = (
+        co, fontLittle, fontTiny, ca = (
             graphics.Color(
                 self.textColorRGB[0], self.textColorRGB[1], self.textColorRGB[2]
             ),
@@ -335,12 +335,12 @@ class Matrice(object):
             timePos = timePos[0], timePos[1] - 5
 
         # Print hours
-        graphics.DrawText(ca, f, timePos[0] + 0, timePos[1], co, hm[0:2])
+        graphics.DrawText(ca, fontLittle, timePos[0] + 0, timePos[1], co, hm[0:2])
         # Print columns
         if int(hm[-1]) % 2:
-            graphics.DrawText(ca, f2, timePos[0] + 9, timePos[1], co, ":")
+            graphics.DrawText(ca, fontTiny, timePos[0] + 9, timePos[1], co, ":")
         # Print Minutes
-        graphics.DrawText(ca, f, timePos[0] + 12, timePos[1], co, hm[2:4])
+        graphics.DrawText(ca, fontLittle, timePos[0] + 12, timePos[1], co, hm[2:4])
 
         if print_xmas:
             # Colors
@@ -348,10 +348,10 @@ class Matrice(object):
             green = graphics.Color(0, 255, 0)
 
             # Days
-            graphics.DrawText(ca, f2, 8, 14, green, "dodos")
+            graphics.DrawText(ca, fontTiny, 8, 14, green, "dodos")
             graphics.DrawText(
                 ca,
-                f2,
+                fontTiny,
                 1 if remaining.days + 1 > 9 else 0,
                 14,
                 red,
@@ -363,16 +363,16 @@ class Matrice(object):
         temp = self.meteo.meanTemps()
         if temp is not None:
             length = graphics.DrawText(
-                ca, f, inTempPos[0], inTempPos[1], co, tempFormat.format(temp)
+                ca, fontLittle, inTempPos[0], inTempPos[1], co, tempFormat.format(temp)
             )
             if ca.width >= 64:
                 length -= 2
                 length += graphics.DrawText(
-                    ca, f, inTempPos[0] + length, inTempPos[1], co, "°"
+                    ca, fontLittle, inTempPos[0] + length, inTempPos[1], co, "°"
                 )
                 length -= 1
                 length += graphics.DrawText(
-                    ca, f, inTempPos[0] + length, inTempPos[1], co, "C"
+                    ca, fontLittle, inTempPos[0] + length, inTempPos[1], co, "C"
                 )
 
         # Print weather icon (origin is TopLeft, coordinates are flipped)
@@ -388,32 +388,56 @@ class Matrice(object):
             if ca.width >= 64:
                 length -= 2
                 length += graphics.DrawText(
-                    ca, f, outTempPos[0] + length, outTempPos[1], co, "°"
+                    ca, fontLittle, outTempPos[0] + length, outTempPos[1], co, "°"
                 )
                 length -= 1
                 length += graphics.DrawText(
-                    ca, f, outTempPos[0] + length, outTempPos[1], co, "C"
+                    ca, fontLittle, outTempPos[0] + length, outTempPos[1], co, "C"
                 )
 
-        if ca.width >= 96 and self.compteur.name is not None:
-            name = self.compteur.name
-            graphics.DrawText(
-                ca,
-                f2,
-                64 + max(0, (32 - len(name) * 4) / 2),
-                14,
-                co,
-                name,
-            )
-            compte = str(self.compteur.compte)
-            graphics.DrawText(
-                ca,
-                f,
-                64 + max(0, (32 - len(compte) * 5) / 2),
-                7,
-                co,
-                compte,
-            )
+        if ca.width >= 96:
+            job_info = self.octoprint.job_info()
+            if job_info is not None:
+                name = job_info["name"]
+                progression = "{:2.2f}% ".format(job_info["completion"])
+                time_left = str(datetime.timedelta(seconds=job_info["time_left"]))
+
+                graphics.DrawText(
+                    ca,
+                    fontLittle,
+                    64 + max(0, (32 - len(progression) * 5) / 2),
+                    14,
+                    co,
+                    progression,
+                )
+                graphics.DrawText(
+                    ca,
+                    fontLittle,
+                    64 + max(0, (32 - len(time_left) * 5) / 2),
+                    7,
+                    co,
+                    time_left,
+                )
+
+            if self.compteur.name is not None:
+                name = self.compteur.name
+                graphics.DrawText(
+                    ca,
+                    fontTiny,
+                    64 + max(0, (32 - len(name) * 4) / 2),
+                    14,
+                    co,
+                    name,
+                )
+                compte = str(self.compteur.compte)
+                graphics.DrawText(
+                    ca,
+                    fontLittle,
+                    64 + max(0, (32 - len(compte) * 5) / 2),
+                    7,
+                    co,
+                    compte,
+                )
 
     # Run loop of the server
     def show(self):

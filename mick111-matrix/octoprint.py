@@ -4,7 +4,7 @@
 
 from octorest import OctoRest
 import time
-
+import datetime
 import json
 
 
@@ -34,10 +34,14 @@ class Octoprint(object):
         completion = (
             job_info["progress"]["completion"] if "progress" in job_info else 0.0
         )
+        time_left = (
+            job_info["progress"]["printTimeLeft"] if "progress" in job_info else 0.0
+        )
 
         return {
             "name": job_info["job"]["file"]["name"],
             "completion": completion,
+            "time_left": time_left,
         }
 
 
@@ -53,10 +57,19 @@ if __name__ == "__main__":
     if job_info is None:
         exit(octoprint.octoprint.job_info()["state"])
 
-    progression = job_info["completion"]
-
     while job_info is not None:
-        avancement = int(progression * 32)
+        progression = job_info["completion"]
+        time_left = job_info["time_left"]
+
+        print(
+            (
+                "{:3.2f}% ".format(progression)
+                + str(datetime.timedelta(seconds=time_left))
+            ).center(32)
+        )
+        avancement = int(progression / 100 * 32)
         print(avancement * "o" + (32 - avancement) * "*")
-        time.sleep(1)
         job_info = octoprint.job_info()
+        if job_info is None:
+            break
+        time.sleep(1)
