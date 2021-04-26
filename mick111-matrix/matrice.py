@@ -383,7 +383,12 @@ class Matrice(object):
         outTemp = self.meteo.outsideTemperature()
         if outTemp is not None:
             length = graphics.DrawText(
-                ca, f, outTempPos[0], outTempPos[1], co, tempFormat.format(outTemp)
+                ca,
+                fontLittle,
+                outTempPos[0],
+                outTempPos[1],
+                co,
+                tempFormat.format(outTemp),
             )
             if ca.width >= 64:
                 length -= 2
