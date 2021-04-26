@@ -417,7 +417,7 @@ class Matrice(object):
                 )
                 graphics.DrawText(
                     ca,
-                    fontLittle,
+                    fontTiny,
                     64 + max(0, (32 - len(time_left) * 5) / 2),
                     7,
                     co,
