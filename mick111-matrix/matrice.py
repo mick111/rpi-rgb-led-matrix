@@ -405,7 +405,7 @@ class Matrice(object):
             if job_info is not None:
                 name = job_info["name"]
                 progression = "{:2.2f}% ".format(job_info["completion"])
-                time_left = str(datetime.timedelta(seconds=job_info["time_left"]))
+                time_left = str(datetime.timedelta(seconds=job_info["time_left"] or 0))
 
                 graphics.DrawText(
                     ca,
