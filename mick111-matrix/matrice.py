@@ -16,8 +16,8 @@ import datetime
 import sys
 
 from meteo import Meteo
-from compteur import Compteur
 from octoprint import Octoprint
+from jeedom import Jeedom
 
 
 def gif_to_imgs(im, duration=0.05):
@@ -94,14 +94,20 @@ class Matrice(object):
         openweathermap_apikey = open(self.args.openweathermap_apikey).read().strip()
         self.meteo = Meteo(openweathermap_apikey)
 
-        self.compteur = Compteur()
-
         octoprint_json = json.loads(open(self.args.octoprint_json).read())
         octoprint_url, octoprint_apikey = (
             octoprint_json["url"],
             octoprint_json["apikey"],
         )
         self.octoprint = Octoprint(url=octoprint_url, apikey=octoprint_apikey)
+
+        jeedom_json = json.loads(open(self.args.jeedom_json).read())
+        jeedom_host, jeedom_port, jeedom_apikey = (
+            jeedom_json["host"],
+            jeedom_json["port"],
+            jeedom_json["apikey"],
+        )
+        self.jeedom = Jeedom(host=jeedom_host, port=jeedom_port, apikey=jeedom_apikey)
 
         self.reset()
 
@@ -189,8 +195,6 @@ class Matrice(object):
             int(rgb[2] * 255.0),
         )
 
-        self.compteur.name = fileinfo.get("compteurName", None)
-        self.compteur.compte = fileinfo.get("compteurCompte", 0)
 
     def updateToConfigFile(self):
         try:
@@ -215,10 +219,6 @@ class Matrice(object):
             fileinfo["hue_bg"] = int(hls[0] * 360)
             fileinfo["light_bg"] = int(hls[1] * 100)
             fileinfo["saturation_bg"] = int(hls[2] * 100)
-
-            if self.compteur.name is not None:
-                fileinfo["compteurName"] = self.compteur.name
-                fileinfo["compteurCompte"] = self.compteur.compte
 
             json.dump(fileinfo, open(self.fileinformation, "w+"))
         except Exception as e:
@@ -424,8 +424,8 @@ class Matrice(object):
                     time_left,
                 )
 
-            elif self.compteur.name is not None:
-                name = self.compteur.name
+            elif self.jeedom.boutton_unite is not None:
+                name = self.jeedom.boutton_unite
                 graphics.DrawText(
                     ca,
                     fontTiny,
@@ -434,7 +434,7 @@ class Matrice(object):
                     co,
                     name,
                 )
-                compte = str(self.compteur.compte)
+                compte = str(self.jeedom.boutton_compte)
                 graphics.DrawText(
                     ca,
                     fontLittle,
@@ -747,6 +747,11 @@ if __name__ == "__main__":
         "--octoprint_json",
         help="File Containing Octoprint API key.",
         default="/etc/octoprint_creds.json",
+    )
+    parser.add_argument(
+        "--jeedom_json",
+        help="File Containing Jeedom API key.",
+        default="/etc/jeedom_creds.json",
     )
     parser.add_argument(
         "--history",
