@@ -422,6 +422,14 @@ class Matrice(object):
                     co,
                     time_left,
                 )
+                for i in range(0, int(progression * 32 / 100)):
+                    ca.SetPixel(
+                        64 + i,
+                        15,
+                        self.textColorRGB[0],
+                        self.textColorRGB[1],
+                        self.textColorRGB[2],
+                    )
 
             elif self.jeedom.boutton_unite is not None:
                 name = self.jeedom.boutton_unite
@@ -444,8 +452,8 @@ class Matrice(object):
                 )
                 for i in range(0, int(self.jeedom.boutton_batterie) * 32 // 100):
                     ca.SetPixel(
-                        i,
-                        0,
+                        64 + i,
+                        15,
                         self.textColorRGB[0],
                         self.textColorRGB[1],
                         self.textColorRGB[2],
