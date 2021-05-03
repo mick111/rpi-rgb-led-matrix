@@ -428,7 +428,7 @@ class Matrice(object):
                     self.textColorRGB[1] / 2,
                     self.textColorRGB[2] / 2,
                 )
-                for i in range(0, 32):
+                for i in range(0, currentProgress):
                     c = self.textColorRGB if i <= currentProgress else c
                     ca.SetPixel(64 + i, 15, c[0], c[1], c[2])
 
@@ -459,7 +459,7 @@ class Matrice(object):
                     self.textColorRGB[1] / 2,
                     self.textColorRGB[2] / 2,
                 )
-                for i in range(0, 32):
+                for i in range(0, currentProgress):
                     c = self.textColorRGB if i <= currentProgress else c
                     ca.SetPixel(64 + i, 15, c[0], c[1], c[2])
 
