@@ -422,13 +422,20 @@ class Matrice(object):
                     co,
                     time_left,
                 )
-                for i in range(0, int(job_info["completion"] * 32.0 / 100)):
+                currentProgress = int(job_info["completion"] * 32.0 / 100)
+                for i in range(0, 32):
                     ca.SetPixel(
                         64 + i,
                         15,
-                        self.textColorRGB[0],
-                        self.textColorRGB[1],
-                        self.textColorRGB[2],
+                        self.textColorRGB[0]
+                        if i <= currentProgress
+                        else self.textColorRGB[0] / 2,
+                        self.textColorRGB[1]
+                        if i <= currentProgress
+                        else self.textColorRGB[1] / 2,
+                        self.textColorRGB[2]
+                        if i <= currentProgress
+                        else self.textColorRGB[2] / 2,
                     )
 
             elif self.jeedom.boutton_unite is not None:
