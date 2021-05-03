@@ -443,6 +443,8 @@ class Matrice(object):
                     co,
                     compte,
                 )
+                for i in range(0, self.jeedom.boutton_batterie * 32 / 100):
+                    graphics.SetPixel(i, 0, self.textColorRGB[0], self.textColorRGB[1], self.textColorRGB[2])
 
     # Run loop of the server
     def show(self):
