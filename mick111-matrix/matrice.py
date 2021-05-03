@@ -442,7 +442,7 @@ class Matrice(object):
                     co,
                     compte,
                 )
-                for i in range(0, int(self.jeedom.boutton_batterie) * 32 / 100):
+                for i in range(0, int(self.jeedom.boutton_batterie) * 32 // 100):
                     graphics.SetPixel(
                         i,
                         0,
