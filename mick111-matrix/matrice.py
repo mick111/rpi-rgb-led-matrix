@@ -422,7 +422,7 @@ class Matrice(object):
                     co,
                     time_left,
                 )
-                for i in range(0, int(progression * 32 / 100)):
+                for i in range(0, int(job_info["completion"] * 32.0 / 100)):
                     ca.SetPixel(
                         64 + i,
                         15,
