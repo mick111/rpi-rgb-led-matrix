@@ -31,7 +31,7 @@ class Octoprint(object):
             job_info = self.octoprint.job_info()
             if job_info["state"] != "Printing":
                 return None
-        except ConnectionError as ex:
+        except Exception as ex:
             print(ex)
             self.octoprint = None
             return None
