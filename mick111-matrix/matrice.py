@@ -422,21 +422,15 @@ class Matrice(object):
                     co,
                     time_left,
                 )
-                currentProgress = int(job_info["completion"] * 32.0 / 100)
+                currentProgress = int(job_info["completion"] * 32.0 / 100.0)
+                c = (
+                    self.textColorRGB[0] / 2,
+                    self.textColorRGB[1] / 2,
+                    self.textColorRGB[2] / 2,
+                )
                 for i in range(0, 32):
-                    ca.SetPixel(
-                        64 + i,
-                        15,
-                        self.textColorRGB[0]
-                        if i <= currentProgress
-                        else self.textColorRGB[0] / 2,
-                        self.textColorRGB[1]
-                        if i <= currentProgress
-                        else self.textColorRGB[1] / 2,
-                        self.textColorRGB[2]
-                        if i <= currentProgress
-                        else self.textColorRGB[2] / 2,
-                    )
+                    c = self.textColorRGB if i <= currentProgress else c
+                    ca.SetPixel(64 + i, 15, c[0], c[1], c[2])
 
             elif self.jeedom.boutton_unite is not None:
                 name = self.jeedom.boutton_unite
@@ -457,14 +451,15 @@ class Matrice(object):
                     co,
                     compte,
                 )
-                for i in range(0, int(self.jeedom.boutton_batterie) * 32 // 100):
-                    ca.SetPixel(
-                        64 + i,
-                        15,
-                        self.textColorRGB[0],
-                        self.textColorRGB[1],
-                        self.textColorRGB[2],
-                    )
+                currentProgress = int(self.jeedom.boutton_batterie * 32.0 / 100.0)
+                c = (
+                    self.textColorRGB[0] / 2,
+                    self.textColorRGB[1] / 2,
+                    self.textColorRGB[2] / 2,
+                )
+                for i in range(0, 32):
+                    c = self.textColorRGB if i <= currentProgress else c
+                    ca.SetPixel(64 + i, 15, c[0], c[1], c[2])
 
     # Run loop of the server
     def show(self):
