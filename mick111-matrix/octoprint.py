@@ -22,13 +22,18 @@ class Octoprint(object):
             print(ex)
 
     def job_info(self):
-        if self.octoprint is None:
-            self.connect()
-        if self.octoprint is None:
-            return None
+        try:
+            if self.octoprint is None:
+                self.connect()
+            if self.octoprint is None:
+                return None
 
-        job_info = self.octoprint.job_info()
-        if job_info["state"] != "Printing":
+            job_info = self.octoprint.job_info()
+            if job_info["state"] != "Printing":
+                return None
+        except ConnectionError as ex:
+            print(ex)
+            self.octoprint = None
             return None
 
         completion = (
