@@ -443,7 +443,7 @@ class Matrice(object):
                     compte,
                 )
                 for i in range(0, int(self.jeedom.boutton_batterie) * 32 // 100):
-                    graphics.SetPixel(
+                    ca.SetPixel(
                         i,
                         0,
                         self.textColorRGB[0],
