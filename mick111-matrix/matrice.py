@@ -451,7 +451,9 @@ class Matrice(object):
                     co,
                     compte,
                 )
-                currentProgress = int(self.jeedom.boutton_batterie * 32.0 / 100.0)
+                currentProgress = int(
+                    float(self.jeedom.boutton_batterie) * 32.0 / 100.0
+                )
                 c = (
                     self.textColorRGB[0] / 2,
                     self.textColorRGB[1] / 2,
