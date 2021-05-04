@@ -452,14 +452,14 @@ class Matrice(object):
                     compte,
                 )
                 batterie = int(float(self.jeedom.boutton_batterie) * 32.0 / 100.0)
+                c = (
+                    self.textColorRGB
+                    if batterie > 20
+                    else (255, 255, 0)
+                    if batterie > 10
+                    else (255, 0, 0)
+                )
                 for i in range(0, batterie):
-                    c = (
-                        self.textColorRGB
-                        if i > 20
-                        else (255, 255, 0)
-                        if i > 10
-                        else (255, 0, 0)
-                    )
                     ca.SetPixel(64 + i, 15, c[0], c[1], c[2])
 
     # Run loop of the server
