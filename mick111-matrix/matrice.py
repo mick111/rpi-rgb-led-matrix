@@ -440,9 +440,8 @@ class Matrice(object):
                     self.textColorRGB[1] / 2,
                     self.textColorRGB[2] / 2,
                 )
-                for i in range(0, currentProgress):
-                    c = self.textColorRGB if i <= currentProgress else c
-                    ca.SetPixel(64 + i, 15, c[0], c[1], c[2])
+                for i in range(0, int(currentProgress * 16.0 / 100.0)):
+                    ca.SetPixel(95, 15 - i, c[0], c[1], c[2])
 
             elif self.jeedom.boutton_unite is not None and len(
                 self.jeedom.boutton_unite
@@ -474,8 +473,8 @@ class Matrice(object):
                     else (255, 0, 0)
                 )
 
-                for i in range(0, int(batterie * 32.0 / 100.0)):
-                    ca.SetPixel(64 + i, 15, c[0], c[1], c[2])
+                for i in range(0, int(batterie * 16.0 / 100.0)):
+                    ca.SetPixel(95, 15 - i, c[0], c[1], c[2])
             else:
                 valeur = self.moteur_tv.position_pourcent()
                 valeur_str = "{:d}".format(int(valeur))
@@ -489,7 +488,7 @@ class Matrice(object):
                 )
                 c = self.textColorRGB
                 for i in range(0, int(valeur * 16.0 / 100.0)):
-                    ca.SetPixel(64, 15 - i, c[0], c[1], c[2])
+                    ca.SetPixel(95, 15 - i, c[0], c[1], c[2])
 
     # Run loop of the server
     def show(self):
