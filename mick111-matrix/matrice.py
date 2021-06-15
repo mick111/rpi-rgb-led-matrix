@@ -18,6 +18,7 @@ import sys
 from meteo import Meteo
 from octoprint import Octoprint
 from jeedom import Jeedom
+from moteur_tv import MoteurTV
 
 
 def gif_to_imgs(im, duration=0.05):
@@ -100,6 +101,17 @@ class Matrice(object):
             octoprint_json["apikey"],
         )
         self.octoprint = Octoprint(url=octoprint_url, apikey=octoprint_apikey)
+
+        moteur_tv_url, moteur_tv_apikey = None, None
+        try:
+            moteur_tv_json = json.loads(open(self.args.moteur_tv_json).read())
+            moteur_tv_url, moteur_tv_apikey = (
+                moteur_tv_json["url"],
+                moteur_tv_json["apikey"],
+            )
+        except Exception:
+            pass
+        self.moteur_tv = MoteurTV(url=moteur_tv_url, apikey=moteur_tv_apikey)
 
         jeedom_json = json.loads(open(self.args.jeedom_json).read())
         jeedom_host, jeedom_port, jeedom_apikey = (
@@ -432,7 +444,9 @@ class Matrice(object):
                     c = self.textColorRGB if i <= currentProgress else c
                     ca.SetPixel(64 + i, 15, c[0], c[1], c[2])
 
-            elif self.jeedom.boutton_unite is not None:
+            elif self.jeedom.boutton_unite is not None and len(
+                self.jeedom.boutton_unite
+            ):
                 name = self.jeedom.boutton_unite
                 graphics.DrawText(
                     ca,
@@ -462,6 +476,20 @@ class Matrice(object):
 
                 for i in range(0, int(batterie * 32.0 / 100.0)):
                     ca.SetPixel(64 + i, 15, c[0], c[1], c[2])
+            else:
+                valeur = self.moteur_tv.position_pourcent()
+                valeur_str = "{:d}".format(int(valeur))
+                graphics.DrawText(
+                    ca,
+                    fontLittle,
+                    64 + max(0, (32 - len(valeur_str) * 5) / 2),
+                    7,
+                    co,
+                    valeur_str,
+                )
+                c = self.textColorRGB
+                for i in range(0, int(valeur * 16.0 / 100.0)):
+                    ca.SetPixel(64, 15 - i, c[0], c[1], c[2])
 
     # Run loop of the server
     def show(self):
