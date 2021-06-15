@@ -477,7 +477,7 @@ class Matrice(object):
                     ca.SetPixel(95, 15 - i, c[0], c[1], c[2])
             else:
                 valeur = self.moteur_tv.position_pourcent()
-                valeur_str = "{:d}".format(int(valeur))
+                valeur_str = "{:d} %%".format(int(valeur))
                 graphics.DrawText(
                     ca,
                     fontLittle,
