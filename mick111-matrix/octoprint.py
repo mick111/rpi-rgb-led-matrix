@@ -9,6 +9,9 @@ import json
 
 
 class Octoprint(object):
+    last_time = datetime.datetime.now()
+    last_job_info = None
+
     def __init__(self, url, apikey):
         self.url = url
         self.apikey = apikey
@@ -22,29 +25,38 @@ class Octoprint(object):
             print(ex)
 
     def job_info(self):
-        try:
-            if self.octoprint is None:
-                self.connect()
-            if self.octoprint is None:
-                return None
+        if datetime.datetime.now() - self.last_time < datetime.timedelta(seconds=5):
+            self.last_job_info = None
 
-            job_info = self.octoprint.job_info()
-            if job_info["state"] != "Printing":
+        if self.last_job_info is None:
+            self.last_time = datetime.datetime.now()
+            try:
+                if self.octoprint is None:
+                    self.connect()
+                if self.octoprint is None:
+                    return None
+
+                self.last_job_info = self.octoprint.job_info()
+                if self.last_job_info["state"] != "Printing":
+                    return None
+            except Exception as ex:
+                print(ex)
+                self.octoprint = None
                 return None
-        except Exception as ex:
-            print(ex)
-            self.octoprint = None
-            return None
 
         completion = (
-            job_info["progress"]["completion"] if "progress" in job_info else 0.0
+            self.last_job_info["progress"]["completion"]
+            if "progress" in self.last_job_info
+            else 0.0
         )
         time_left = (
-            job_info["progress"]["printTimeLeft"] if "progress" in job_info else 0.0
+            self.last_job_info["progress"]["printTimeLeft"]
+            if "progress" in self.last_job_info
+            else 0.0
         )
 
         return {
-            "name": job_info["job"]["file"]["name"],
+            "name": self.last_job_info["job"]["file"]["name"],
             "completion": completion,
             "time_left": time_left,
         }

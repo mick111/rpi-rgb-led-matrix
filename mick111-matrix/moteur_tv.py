@@ -1,10 +1,13 @@
 #!/usr/bin/env python
 import requests
+import datetime
 
 
 class MoteurTV(object):
     """Compteur"""
 
+    last_time = datetime.datetime.now()
+    last_etat = None
     # {"curr_position_pourcent": 72.0009, "etat": {"ratio_vitesse": 1.73333, "action": "stop", "position": 14825, "maximum": 20590, "pin_onoff": 13, "pin_direction": 12}, "curr_position": 14825, "info": "Etat OK"}
 
     URL = "http://192.168.0.129:28692"
@@ -15,7 +18,13 @@ class MoteurTV(object):
             self.URL = url
 
     def etat(self):
-        return requests.get(f"{self.URL}/etat").json()
+        if datetime.datetime.now() - self.last_time < datetime.timedelta(seconds=2):
+            self.last_etat = None
+
+        if self.last_etat is None:
+            self.last_etat = requests.get(f"{self.URL}/etat").json()
+            self.last_time = datetime.datetime.now()
+        return self.last_etat
 
     def position_pourcent(self):
         try:

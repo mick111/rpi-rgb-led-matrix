@@ -6,6 +6,7 @@ import os
 from PIL import Image
 import random
 
+
 # Classe pour gerer la Meteo
 class Meteo(object):
     def __init__(self, openweathermap_apikey):
