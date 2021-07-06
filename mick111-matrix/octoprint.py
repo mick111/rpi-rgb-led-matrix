@@ -49,6 +49,8 @@ class Octoprint(object):
             if "progress" in self.last_job_info
             else 0.0
         )
+        if completion is None:
+            return None
         time_left = (
             self.last_job_info["progress"]["printTimeLeft"]
             if "progress" in self.last_job_info
