@@ -34,10 +34,14 @@ class MoteurTV(object):
 
     def position_pourcent(self):
         try:
-            return self.etat()["curr_position_pourcent"]
+            etat = self.etat()
+            if etat is None:
+                return None
+            else:
+                return etat["curr_position_pourcent"]
         except Exception as e:
             print(e)
-        return 0
+        return None
 
 
 if __name__ == "__main__":
