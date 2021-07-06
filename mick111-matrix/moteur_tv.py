@@ -6,7 +6,7 @@ import datetime
 class MoteurTV(object):
     """Compteur"""
 
-    last_time = datetime.datetime.now()
+    next_time = datetime.datetime.now()
     last_etat = None
     # {"curr_position_pourcent": 72.0009, "etat": {"ratio_vitesse": 1.73333, "action": "stop", "position": 14825, "maximum": 20590, "pin_onoff": 13, "pin_direction": 12}, "curr_position": 14825, "info": "Etat OK"}
 
@@ -18,12 +18,18 @@ class MoteurTV(object):
             self.URL = url
 
     def etat(self):
-        if datetime.datetime.now() - self.last_time < datetime.timedelta(seconds=2):
+        if datetime.datetime.now() > self.next_time:
             self.last_etat = None
+        else:
+            return self.last_etat
 
         if self.last_etat is None:
-            self.last_etat = requests.get(f"{self.URL}/etat").json()
-            self.last_time = datetime.datetime.now()
+            self.next_time = datetime.datetime.now() + datetime.timedelta(seconds=5)
+            try:
+                self.last_etat = requests.get(f"{self.URL}/etat", timeout=1).json()
+            except Exception as e:
+                print(e)
+                self.next_time += datetime.timedelta(minutes=5)
         return self.last_etat
 
     def position_pourcent(self):

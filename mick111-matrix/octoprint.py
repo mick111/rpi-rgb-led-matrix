@@ -9,7 +9,7 @@ import json
 
 
 class Octoprint(object):
-    last_time = datetime.datetime.now()
+    next_time = datetime.datetime.now()
     last_job_info = None
 
     def __init__(self, url, apikey):
@@ -25,15 +25,18 @@ class Octoprint(object):
             print(ex)
 
     def job_info(self):
-        if datetime.datetime.now() - self.last_time < datetime.timedelta(seconds=5):
+        if datetime.datetime.now() > self.next_time:
             self.last_job_info = None
+        else:
+            return self.last_job_info
 
         if self.last_job_info is None:
-            self.last_time = datetime.datetime.now()
+            self.next_time = datetime.datetime.now() + datetime.timedelta(seconds=5)
             try:
                 if self.octoprint is None:
                     self.connect()
                 if self.octoprint is None:
+                    self.next_time += datetime.timedelta(minutes=5)
                     return None
 
                 self.last_job_info = self.octoprint.job_info()

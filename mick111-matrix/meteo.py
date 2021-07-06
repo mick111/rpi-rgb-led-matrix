@@ -73,7 +73,8 @@ class Meteo(object):
             j = requests.get(
                 "http://api.openweathermap.org/data/2.5/weather?id=2968815&APPID={}&units=metric".format(
                     self.openweathermap_apikey
-                )
+                ),
+                timeout=1,
             ).json()
             self.out = float(j["main"]["temp"])
             iconName = j["weather"][0]["icon"]
